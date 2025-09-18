@@ -1,0 +1,288 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  phone     String?  @unique
+  name      String
+  avatar    String?
+  password  String
+  role      UserRole @default(CUSTOMER)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  addresses    Address[]
+  orders       Order[]
+  favorites    Favorite[]
+  reviews      Review[]
+  cartItems    CartItem[]
+
+  @@map("users")
+}
+
+model Address {
+  id        String  @id @default(cuid())
+  userId    String
+  type      String  // Home, Office, Other
+  address   String
+  city      String
+  pincode   String
+  latitude  Float?
+  longitude Float?
+  isDefault Boolean @default(false)
+
+  // Relations
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@map("addresses")
+}
+
+model Restaurant {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  image       String?
+  banner      String?
+  cuisine     String[]
+  rating      Float    @default(0)
+  totalRating Int      @default(0)
+  ratingCount Int      @default(0)
+  isActive    Boolean  @default(true)
+  isPromoted  Boolean  @default(false)
+  
+  // Location
+  address     String
+  city        String
+  pincode     String
+  latitude    Float?
+  longitude   Float?
+  
+  // Timing
+  openTime    String
+  closeTime   String
+  
+  // Delivery
+  deliveryFee Float    @default(0)
+  minOrder    Float    @default(0)
+  deliveryTime String
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  menuItems MenuCategory[]
+  orders    Order[]
+  reviews   Review[]
+  favorites Favorite[]
+
+  @@map("restaurants")
+}
+
+model MenuCategory {
+  id           String @id @default(cuid())
+  restaurantId String
+  name         String
+  description  String?
+  isActive     Boolean @default(true)
+  sortOrder    Int     @default(0)
+
+  // Relations
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items      MenuItem[]
+
+  @@map("menu_categories")
+}
+
+model MenuItem {
+  id          String  @id @default(cuid())
+  categoryId  String
+  name        String
+  description String?
+  image       String?
+  price       Float
+  discountPrice Float?
+  isVeg       Boolean @default(true)
+  isAvailable Boolean @default(true)
+  isPopular   Boolean @default(false)
+  prepTime    String?
+  calories    Int?
+  
+  // Customizations
+  customizations Json? // Store customization options as JSON
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  category    MenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+  favorites   Favorite[]
+  cartItems   CartItem[]
+
+  @@map("menu_items")
+}
+
+model CartItem {
+  id             String @id @default(cuid())
+  userId         String
+  menuItemId     String
+  quantity       Int    @default(1)
+  customizations Json? // Store selected customizations
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  // Fixed: Allow multiple cart items with different customizations
+  @@map("cart_items")
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  restaurantId String
+  addressId   String
+  
+  // Order details
+  orderNumber String      @unique
+  status      OrderStatus @default(PENDING)
+  
+  // Pricing
+  subtotal    Float
+  deliveryFee Float
+  tax         Float
+  discount    Float       @default(0)
+  total       Float
+  
+  // Payment
+  paymentMethod   String
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentId       String?
+  
+  // Delivery
+  estimatedTime   String
+  actualTime      String?
+  deliveryInstructions String?
+  
+  // Timestamps
+  placedAt    DateTime @default(now())
+  confirmedAt DateTime?
+  preparedAt  DateTime?
+  pickedUpAt  DateTime?
+  deliveredAt DateTime?
+  cancelledAt DateTime?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user       User         @relation(fields: [userId], references: [id])
+  restaurant Restaurant   @relation(fields: [restaurantId], references: [id])
+  address    Address      @relation(fields: [addressId], references: [id])
+  items      OrderItem[]
+  review     Review?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String @id @default(cuid())
+  orderId        String
+  menuItemId     String
+  quantity       Int
+  unitPrice      Float
+  customizations Json?
+  
+  // Relations
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@map("order_items")
+}
+
+model Review {
+  id           String @id @default(cuid())
+  userId       String
+  restaurantId String
+  orderId      String @unique
+  
+  rating       Int    // 1-5
+  comment      String?
+  images       String[] // Array of image URLs
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user       User       @relation(fields: [userId], references: [id])
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+  order      Order      @relation(fields: [orderId], references: [id])
+
+  @@map("reviews")
+}
+
+model Favorite {
+  id           String @id @default(cuid())
+  userId       String
+  restaurantId String?
+  menuItemId   String?
+  type         FavoriteType
+  
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menuItem   MenuItem?   @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+
+  // Fixed: Separate unique constraints for each favorite type
+  @@unique([userId, restaurantId], name: "user_restaurant_favorite")
+  @@unique([userId, menuItemId], name: "user_menuitem_favorite")
+  @@map("favorites")
+}
+
+// Enums
+enum UserRole {
+  CUSTOMER
+  RESTAURANT_OWNER
+  DELIVERY_PARTNER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum FavoriteType {
+  RESTAURANT
+  MENU_ITEM
+}
