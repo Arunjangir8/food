@@ -86,19 +86,100 @@ const cartUtils = {
   }
 };
 
+// Favorites utility functions
+const favoritesUtils = {
+  getFavorites: () => {
+    try {
+      const favorites = localStorage.getItem('foodFavorites');
+      return favorites ? JSON.parse(favorites) : [];
+    } catch (error) {
+      console.error('Error getting favorites from localStorage:', error);
+      return [];
+    }
+  },
+
+  saveFavorites: (favorites) => {
+    try {
+      localStorage.setItem('foodFavorites', JSON.stringify(favorites));
+    } catch (error) {
+      console.error('Error saving favorites to localStorage:', error);
+    }
+  },
+
+  addToFavorites: (item) => {
+    const favorites = favoritesUtils.getFavorites();
+    
+    // Create favorite item without quantity - just essential details
+    const favoriteItem = {
+      id: item.id,
+      itemId: item.id,
+      restaurantId: item.restaurantId || 1,
+      restaurantName: item.restaurantName || "Pizza Palace",
+      name: item.name,
+      price: item.price,
+      description: item.description,
+      image: item.image,
+      category: item.category,
+      dietaryType: item.dietaryType,
+      popular: item.popular,
+      customizations: item.customizations,
+      addedAt: new Date().toISOString()
+    };
+
+    // Check if item already exists in favorites
+    const existingIndex = favorites.findIndex(fav => fav.id === item.id);
+    
+    if (existingIndex === -1) {
+      // Add to favorites
+      const updatedFavorites = [...favorites, favoriteItem];
+      favoritesUtils.saveFavorites(updatedFavorites);
+      return { favorites: updatedFavorites, added: true };
+    } else {
+      // Remove from favorites
+      const updatedFavorites = favorites.filter(fav => fav.id !== item.id);
+      favoritesUtils.saveFavorites(updatedFavorites);
+      return { favorites: updatedFavorites, added: false };
+    }
+  },
+
+  removeFromFavorites: (itemId) => {
+    const favorites = favoritesUtils.getFavorites();
+    const updatedFavorites = favorites.filter(fav => fav.id !== itemId);
+    favoritesUtils.saveFavorites(updatedFavorites);
+    return updatedFavorites;
+  },
+
+  clearFavorites: () => {
+    favoritesUtils.saveFavorites([]);
+    return [];
+  },
+
+  isFavorite: (itemId) => {
+    const favorites = favoritesUtils.getFavorites();
+    return favorites.some(fav => fav.id === itemId);
+  },
+
+  getFavoritesCount: () => {
+    const favorites = favoritesUtils.getFavorites();
+    return favorites.length;
+  }
+};
+
 const RestaurantDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [cart, setCart] = useState([]);
-  const [favorites, setFavorites] = useState(new Set());
+  const [favorites, setFavorites] = useState([]);
   const [showCustomization, setShowCustomization] = useState(null);
 
-  // Load cart from localStorage on component mount
+  // Load cart and favorites from localStorage on component mount
   useEffect(() => {
     const savedCart = cartUtils.getCart();
+    const savedFavorites = favoritesUtils.getFavorites();
     setCart(savedCart);
+    setFavorites(savedFavorites);
   }, []);
 
   // Mock restaurant data
@@ -277,18 +358,25 @@ const RestaurantDetailsPage = () => {
     setCart(updatedCart);
   };
 
-  const toggleFavorite = (itemId) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(itemId)) {
-      newFavorites.delete(itemId);
+  const toggleFavorite = (item) => {
+    const result = favoritesUtils.addToFavorites(item);
+    setFavorites(result.favorites);
+    
+    // Show feedback message
+    if (result.added) {
+      alert(`${item.name} added to favorites!`);
     } else {
-      newFavorites.add(itemId);
+      alert(`${item.name} removed from favorites!`);
     }
-    setFavorites(newFavorites);
+  };
+
+  const isFavorite = (itemId) => {
+    return favoritesUtils.isFavorite(itemId);
   };
 
   const cartTotal = cart.reduce((total, item) => total + (item.totalPrice * item.quantity), 0);
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const favoritesCount = favorites.length;
 
   const CustomizationModal = ({ item, onClose, onAdd }) => {
     const [selectedCustomizations, setSelectedCustomizations] = useState({});
@@ -405,7 +493,7 @@ const RestaurantDetailsPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-[100vw] bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
+    <div className="min-h-screen mt-16 w-[100vw] bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
       {/* Background Decorations */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 right-20 w-96 h-96 bg-red-100 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-pulse"></div>
@@ -441,19 +529,6 @@ const RestaurantDetailsPage = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Cart Icon */}
-              <button 
-                onClick={() => navigate('/cart')}
-                className="relative p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
-              >
-                <HiOutlineShoppingCart className="w-8 h-8 text-gray-700" />
-                {cartItemsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
-                    {cartItemsCount}
-                  </span>
-                )}
-              </button>
             </div>
           </div>
         </div>
@@ -481,6 +556,26 @@ const RestaurantDetailsPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Favorites Summary */}
+            {favoritesCount > 0 && (
+              <div className="bg-pink-50 border border-pink-200 rounded-2xl p-4 mb-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <HiHeart className="w-5 h-5 text-pink-500" />
+                    <span className="text-pink-700 font-medium">
+                      You have {favoritesCount} favorite item{favoritesCount !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => navigate('/favorites')}
+                    className="text-pink-600 hover:text-pink-700 font-semibold text-sm"
+                  >
+                    View Favorites
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Category Filter */}
             <div className="mb-6">
@@ -539,11 +634,15 @@ const RestaurantDetailsPage = () => {
                           
                           <div className="flex items-center space-x-2">
                             <button
-                              onClick={() => toggleFavorite(item.id)}
-                              className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                              onClick={() => toggleFavorite(item)}
+                              className={`p-2 rounded-full transition-all duration-200 transform hover:scale-110 ${
+                                isFavorite(item.id) 
+                                  ? 'bg-pink-100 hover:bg-pink-200' 
+                                  : 'hover:bg-gray-100'
+                              }`}
                             >
-                              {favorites.has(item.id) ? (
-                                <HiHeart className="w-5 h-5 text-red-500" />
+                              {isFavorite(item.id) ? (
+                                <HiHeart className="w-5 h-5 text-pink-500" />
                               ) : (
                                 <HiOutlineHeart className="w-5 h-5 text-gray-400" />
                               )}

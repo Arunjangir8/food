@@ -3,6 +3,7 @@ import { Dashboard } from './pages/Home/dashboard.jsx'
 import RestaurantsPage from './pages/Restaurants/restaurantsPage.jsx'
 import RestaurantDetailsPage from './pages/Restaurants/restaurantDetails.jsx'
 import CartPage from './pages/Cart/index.jsx'
+import FavoritesPage from './pages/Favorites/index.jsx'
 import Navbar from './components/Navbar/header.jsx'
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
@@ -37,6 +38,7 @@ function App() {
           <Route path="cuisines/:cuisineType" element={<></>} />
           
           <Route path="cart" element={<CartPage/> } />
+          <Route path="favorites" element={<FavoritesPage/> } />
           {/* Nested routes for restaurants with cuisine filter */}
           <Route path="restaurants/cuisine/:cuisineType" element={<></>} />
         </Route>
