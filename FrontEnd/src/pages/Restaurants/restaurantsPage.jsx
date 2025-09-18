@@ -1,0 +1,640 @@
+import React, { useState } from 'react';
+import {
+    HiOutlineSearch,
+    HiOutlineLocationMarker,
+    HiStar,
+    HiOutlineClock,
+    HiOutlineTruck,
+    HiOutlineHeart,
+    HiHeart,
+    HiOutlineFilter,
+    HiOutlineAdjustments
+} from 'react-icons/hi';
+import { useNavigate } from 'react-router-dom';
+import Footer from '../../components/Footer';
+
+const RestaurantsPage = () => {
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedLocation, setSelectedLocation] = useState('Delhi');
+    const [selectedCuisine, setSelectedCuisine] = useState('All');
+    const [favorites, setFavorites] = useState(new Set());
+    const [sortBy, setSortBy] = useState('rating');
+
+    // New filter states
+    const [dietaryPreference, setDietaryPreference] = useState('All'); // All, Veg, Non-Veg
+    const [priceRange, setPriceRange] = useState([0, 1000]); // Min, Max price
+    const [maxDistance, setMaxDistance] = useState(10); // Max distance in km
+    const [showFilters, setShowFilters] = useState(false);
+    const navigate = useNavigate();
+    const handleOrderNow = (restaurantId) => {
+        navigate(`/restaurants/${restaurantId}`);
+    };
+
+    // Mock restaurant data with enhanced properties
+    const [restaurants] = useState([
+        {
+            id: 1,
+            name: "Pizza Palace",
+            cuisine: "Italian",
+            rating: 4.8,
+            deliveryTime: 25,
+            deliveryFee: 2.5,
+            distance: 1.2,
+            image: "🍕",
+            isOpen: true,
+            promoted: true,
+            offer: "30% OFF",
+            description: "Authentic wood-fired pizzas with fresh ingredients",
+            dietaryType: "Both", // Veg, Non-Veg, Both
+            avgPrice: 350,
+            priceRange: "₹300-₹600"
+        },
+        {
+            id: 2,
+            name: "Burger Junction",
+            cuisine: "American",
+            rating: 4.6,
+            deliveryTime: 30,
+            deliveryFee: 3.0,
+            distance: 2.1,
+            image: "🍔",
+            isOpen: true,
+            promoted: false,
+            offer: null,
+            description: "Juicy burgers made with premium beef",
+            dietaryType: "Non-Veg",
+            avgPrice: 450,
+            priceRange: "₹400-₹700"
+        },
+        {
+            id: 3,
+            name: "Sushi Zen",
+            cuisine: "Japanese",
+            rating: 4.9,
+            deliveryTime: 35,
+            deliveryFee: 4.0,
+            distance: 3.5,
+            image: "🍣",
+            isOpen: false,
+            promoted: false,
+            offer: null,
+            description: "Fresh sushi and traditional Japanese cuisine",
+            dietaryType: "Both",
+            avgPrice: 800,
+            priceRange: "₹600-₹1200"
+        },
+        {
+            id: 4,
+            name: "Taco Fiesta",
+            cuisine: "Mexican",
+            rating: 4.4,
+            deliveryTime: 20,
+            deliveryFee: 2.0,
+            distance: 0.8,
+            image: "🌮",
+            isOpen: true,
+            promoted: true,
+            offer: "Free Delivery",
+            description: "Authentic Mexican flavors in every bite",
+            dietaryType: "Both",
+            avgPrice: 300,
+            priceRange: "₹200-₹500"
+        },
+        {
+            id: 5,
+            name: "Green Garden",
+            cuisine: "Indian",
+            rating: 4.7,
+            deliveryTime: 28,
+            deliveryFee: 2.5,
+            distance: 1.8,
+            image: "🥗",
+            isOpen: true,
+            promoted: false,
+            offer: null,
+            description: "Pure vegetarian Indian cuisine",
+            dietaryType: "Veg",
+            avgPrice: 250,
+            priceRange: "₹150-₹400"
+        },
+        {
+            id: 6,
+            name: "Curry House",
+            cuisine: "Indian",
+            rating: 4.5,
+            deliveryTime: 32,
+            deliveryFee: 3.5,
+            distance: 2.3,
+            image: "🍛",
+            isOpen: true,
+            promoted: false,
+            offer: "20% OFF",
+            description: "Authentic Indian curries and tandoor specialties",
+            dietaryType: "Both",
+            avgPrice: 400,
+            priceRange: "₹300-₹700"
+        },
+        {
+            id: 7,
+            name: "Meat Master",
+            cuisine: "Indian",
+            rating: 4.3,
+            deliveryTime: 40,
+            deliveryFee: 3.0,
+            distance: 4.2,
+            image: "🍖",
+            isOpen: true,
+            promoted: false,
+            offer: null,
+            description: "Premium non-veg dishes and grills",
+            dietaryType: "Non-Veg",
+            avgPrice: 600,
+            priceRange: "₹500-₹900"
+        },
+        {
+            id: 8,
+            name: "Healthy Bites",
+            cuisine: "Continental",
+            rating: 4.6,
+            deliveryTime: 25,
+            deliveryFee: 2.0,
+            distance: 1.5,
+            image: "🥙",
+            isOpen: true,
+            promoted: false,
+            offer: "25% OFF",
+            description: "Healthy wraps, salads and smoothies",
+            dietaryType: "Veg",
+            avgPrice: 280,
+            priceRange: "₹200-₹450"
+        }
+    ]);
+
+    const cuisines = ['All', 'Italian', 'American', 'Japanese', 'Mexican', 'Indian', 'Continental'];
+    const locations = ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata'];
+
+    const toggleFavorite = (id) => {
+        const newFavorites = new Set(favorites);
+        if (newFavorites.has(id)) {
+            newFavorites.delete(id);
+        } else {
+            newFavorites.add(id);
+        }
+        setFavorites(newFavorites);
+    };
+
+    const filteredRestaurants = restaurants
+        .filter(restaurant => {
+            const matchesSearch = restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesCuisine = selectedCuisine === 'All' || restaurant.cuisine === selectedCuisine;
+            const matchesDietary = dietaryPreference === 'All' ||
+                restaurant.dietaryType === dietaryPreference ||
+                restaurant.dietaryType === 'Both';
+            const matchesPrice = restaurant.avgPrice >= priceRange[0] && restaurant.avgPrice <= priceRange[1];
+            const matchesDistance = restaurant.distance <= maxDistance;
+
+            return matchesSearch && matchesCuisine && matchesDietary && matchesPrice && matchesDistance;
+        })
+        .sort((a, b) => {
+            switch (sortBy) {
+                case 'rating':
+                    return b.rating - a.rating;
+                case 'deliveryTime':
+                    return a.deliveryTime - b.deliveryTime;
+                case 'distance':
+                    return a.distance - b.distance;
+                case 'price':
+                    return a.avgPrice - b.avgPrice;
+                default:
+                    return 0;
+            }
+        });
+
+
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br lg:pt-20 from-red-50 via-orange-50 to-yellow-50">
+            {/* Background Decorations */}
+            <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute top-20 right-20 w-96 h-96 bg-red-100 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-pulse"></div>
+                <div className="absolute bottom-20 left-20 w-80 h-80 bg-orange-100 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-pulse delay-1000"></div>
+                <div className="absolute top-1/3 left-1/2 w-72 h-72 bg-yellow-100 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-pulse delay-500"></div>
+            </div>
+
+            <div className="relative z-10 px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-8">
+                {/* Header Section */}
+                <div className="mb-8 text-center">
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 mx-auto">
+                        Discover
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-red-600"> Restaurants </span>
+                        Near You
+                    </h1>
+                    <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
+                        Find the best restaurants in {selectedLocation} with fast delivery and amazing food.
+                    </p>
+                </div>
+
+
+                {/* Search and Filters Section */}
+                <div className="mb-8 space-y-6">
+                    {/* Search Bar */}
+                    <div className="bg-white rounded-2xl shadow-2xl p-2 w-full max-w-4xl mx-auto border border-gray-100">
+                        <div className="flex flex-col lg:flex-row gap-2">
+                            {/* Location Selector */}
+                            <div className="relative">
+                                <HiOutlineLocationMarker className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <select
+                                    value={selectedLocation}
+                                    onChange={(e) => setSelectedLocation(e.target.value)}
+                                    className="w-full lg:w-48 pl-12 pr-8 py-4 text-gray-700 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all duration-200 appearance-none"
+                                >
+                                    {locations.map(location => (
+                                        <option key={location} value={location}>{location}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Search Input */}
+                            <div className="relative flex-1">
+                                <HiOutlineSearch className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search restaurants, cuisines, or dishes"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-12 pr-4 py-4 text-gray-700 placeholder-gray-400 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all duration-200"
+                                />
+                            </div>
+
+                            {/* Advanced Filters Toggle */}
+                            <button
+                                onClick={() => setShowFilters(!showFilters)}
+                                className={`px-6 py-4 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${showFilters
+                                    ? 'bg-red-500 text-white shadow-lg'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                            >
+                                <HiOutlineAdjustments className="w-5 h-5" />
+                                <span>Filters</span>
+                            </button>
+                        </div>
+                    </div>
+
+
+                    {/* Advanced Filters Panel */}
+                    <div className='flex justify-center w-full'>
+                        {showFilters && (
+                            <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 animate-slideDown">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                                    {/* Dietary Preference Filter */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-3">Dietary Preference</label>
+                                        <div className="space-y-2">
+                                            {['All', 'Veg', 'Non-Veg'].map(option => (
+                                                <label key={option} className="flex items-center space-x-2 cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="dietary"
+                                                        value={option}
+                                                        checked={dietaryPreference === option}
+                                                        onChange={(e) => setDietaryPreference(e.target.value)}
+                                                        className="w-4 h-4 text-red-500 focus:ring-red-500 focus:ring-2"
+                                                    />
+                                                    <span className="text-gray-700 flex items-center space-x-1">
+                                                        {option === 'Veg' && <span className="w-3 h-3 bg-green-500 rounded-full"></span>}
+                                                        {option === 'Non-Veg' && <span className="w-3 h-3 bg-red-500 rounded-full"></span>}
+                                                        <span>{option}</span>
+                                                    </span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Price Range Filter */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                            Price Range (₹{priceRange[0]} - ₹{priceRange[1]})
+                                        </label>
+                                        <div className="space-y-3">
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="1000"
+                                                value={priceRange[0]}
+                                                onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
+                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                                            />
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="1000"
+                                                value={priceRange[1]}
+                                                onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                                            />
+                                            <div className="flex justify-between text-sm text-gray-500">
+                                                <span>₹0</span>
+                                                <span>₹1000+</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Distance Filter */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-3">
+                                            Max Distance ({maxDistance} km)
+                                        </label>
+                                        <input
+                                            type="range"
+                                            min="1"
+                                            max="20"
+                                            value={maxDistance}
+                                            onChange={(e) => setMaxDistance(parseInt(e.target.value))}
+                                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                                        />
+                                        <div className="flex justify-between text-sm text-gray-500 mt-1">
+                                            <span>1 km</span>
+                                            <span>20+ km</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Sort Options */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-3">Sort By</label>
+                                        <select
+                                            value={sortBy}
+                                            onChange={(e) => setSortBy(e.target.value)}
+                                            className="w-full px-4 py-2 bg-gray-50 text-gray-700 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                        >
+                                            <option value="rating">Highest Rating</option>
+                                            <option value="deliveryTime">Fastest Delivery</option>
+                                            <option value="distance">Nearest First</option>
+                                            <option value="price">Price: Low to High</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Quick Filter Pills */}
+                    <div className="flex flex-wrap items-center w-full justify-center gap-4">
+                        {/* Cuisine Filter */}
+                        <div className="flex flex-wrap gap-2">
+                            {cuisines.map(cuisine => (
+                                <button
+                                    key={cuisine}
+                                    onClick={() => setSelectedCuisine(cuisine)}
+                                    className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${selectedCuisine === cuisine
+                                        ? 'bg-red-500 text-white shadow-lg transform -translate-y-0.5'
+                                        : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md hover:shadow-lg'
+                                        }`}
+                                >
+                                    {cuisine}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Active Filters Display */}
+                    {(dietaryPreference !== 'All' || priceRange[0] > 0 || priceRange[1] < 1000 || maxDistance < 20) && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <span className="text-sm font-semibold text-blue-800">Active Filters:</span>
+                                {dietaryPreference !== 'All' && (
+                                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center space-x-1">
+                                        {dietaryPreference === 'Veg' && <span className="w-2 h-2 bg-green-500 rounded-full"></span>}
+                                        {dietaryPreference === 'Non-Veg' && <span className="w-2 h-2 bg-red-500 rounded-full"></span>}
+                                        <span>{dietaryPreference}</span>
+                                    </span>
+                                )}
+                                {(priceRange[0] > 0 || priceRange[1] < 1000) && (
+                                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                        ₹{priceRange[0]} - ₹{priceRange[1]}
+                                    </span>
+                                )}
+                                {maxDistance < 20 && (
+                                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                        Within {maxDistance}km
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Results Count */}
+                <div className="mb-6">
+                    <p className="text-gray-600">
+                        Found <span className="font-semibold text-gray-900">{filteredRestaurants.length}</span> restaurants in {selectedLocation}
+                    </p>
+                </div>
+
+                {/* Restaurant Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {filteredRestaurants.map((restaurant, index) => (
+                        <div
+                            key={restaurant.id}
+                            className="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group overflow-hidden"
+                            style={{
+                                animationDelay: `${index * 100}ms`,
+                                animation: 'fadeInUp 0.6s ease-out forwards'
+                            }}
+                        >
+                            {/* Restaurant Image Container */}
+                            <div className="relative p-6 pb-4">
+                                <div className="relative bg-gradient-to-br from-orange-200 to-red-200 rounded-2xl h-48 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                                    <div className="text-6xl">{restaurant.image}</div>
+
+                                    {/* Dietary Type Badge */}
+                                    <div className={`absolute top-4 left-4 w-6 h-6 rounded-full border-2 flex items-center justify-center ${restaurant.dietaryType === 'Veg'
+                                        ? 'border-green-600 bg-white'
+                                        : restaurant.dietaryType === 'Non-Veg'
+                                            ? 'border-red-600 bg-white'
+                                            : 'border-orange-600 bg-white'
+                                        }`}>
+                                        <div className={`w-3 h-3 rounded-full ${restaurant.dietaryType === 'Veg'
+                                            ? 'bg-green-600'
+                                            : restaurant.dietaryType === 'Non-Veg'
+                                                ? 'bg-red-600'
+                                                : 'bg-orange-600'
+                                            }`}></div>
+                                    </div>
+
+                                    {/* Promoted Badge */}
+                                    {restaurant.promoted && (
+                                        <div className="absolute -top-2 -left-2 bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold animate-bounce">
+                                            Promoted
+                                        </div>
+                                    )}
+
+                                    {/* Offer Badge */}
+                                    {restaurant.offer && (
+                                        <div className="absolute -top-2 -right-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                            {restaurant.offer}
+                                        </div>
+                                    )}
+
+                                    {/* Status Badge */}
+                                    <div className={`absolute bottom-4 left-4 px-3 py-1 rounded-full text-sm font-semibold ${restaurant.isOpen
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-red-100 text-red-800'
+                                        }`}>
+                                        {restaurant.isOpen ? 'Open' : 'Closed'}
+                                    </div>
+
+                                    {/* Favorite Button */}
+                                    <button
+                                        onClick={() => toggleFavorite(restaurant.id)}
+                                        className="absolute bottom-4 right-4 p-2 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110"
+                                    >
+                                        {favorites.has(restaurant.id) ? (
+                                            <HiHeart className="w-5 h-5 text-red-500" />
+                                        ) : (
+                                            <HiOutlineHeart className="w-5 h-5 text-gray-400" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Restaurant Info */}
+                            <div className="px-6 pb-6">
+                                <div className="mb-3">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-red-500 transition-colors duration-200">
+                                        {restaurant.name}
+                                    </h3>
+                                    <p className="text-gray-600 text-sm mb-2">{restaurant.description}</p>
+                                    <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
+                                        <div className="flex items-center space-x-2">
+                                            <span className="px-2 py-1 bg-gray-100 rounded-full">{restaurant.cuisine}</span>
+                                            <span className={`px-2 py-1 rounded-full ${restaurant.dietaryType === 'Veg'
+                                                ? 'bg-green-100 text-green-800'
+                                                : restaurant.dietaryType === 'Non-Veg'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : 'bg-orange-100 text-orange-800'
+                                                }`}>
+                                                {restaurant.dietaryType === 'Both' ? 'Veg & Non-Veg' : restaurant.dietaryType}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm text-gray-500">
+                                        <span>{restaurant.distance} km away</span>
+                                        <span className="font-semibold text-gray-700">{restaurant.priceRange}</span>
+                                    </div>
+                                </div>
+
+                                {/* Rating and Stats */}
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="flex items-center space-x-1 bg-green-100 px-2 py-1 rounded-full">
+                                            <HiStar className="w-4 h-4 text-green-600 fill-current" />
+                                            <span className="text-green-800 font-semibold text-sm">{restaurant.rating}</span>
+                                        </div>
+
+                                        <div className="flex items-center space-x-1 text-gray-600">
+                                            <HiOutlineClock className="w-4 h-4" />
+                                            <span className="text-sm">{restaurant.deliveryTime} mins</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="text-right">
+                                        <div className="text-sm text-gray-500">Delivery fee</div>
+                                        <div className="font-semibold text-gray-900">${restaurant.deliveryFee}</div>
+                                    </div>
+                                </div>
+
+                                {/* Order Button */}
+                                <button
+                                    disabled={!restaurant.isOpen}
+                                    onClick={() => restaurant.isOpen && handleOrderNow(restaurant.id)}
+                                    className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${restaurant.isOpen
+                                        ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer'
+                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        }`}
+                                >
+                                    <HiOutlineTruck className="w-5 h-5" />
+                                    <span>{restaurant.isOpen ? 'Order Now' : 'Currently Closed'}</span>
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* No Results */}
+                {filteredRestaurants.length === 0 && (
+                    <div className="text-center py-16">
+                        <div className="text-6xl mb-4">🔍</div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">No restaurants found</h3>
+                        <p className="text-gray-600 mb-4">Try adjusting your search or filters</p>
+                        <button
+                            onClick={() => {
+                                setSearchQuery('');
+                                setSelectedCuisine('All');
+                                setDietaryPreference('All');
+                                setPriceRange([0, 1000]);
+                                setMaxDistance(10);
+                            }}
+                            className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors duration-200"
+                        >
+                            Reset Filters
+                        </button>
+                    </div>
+                )}
+            </div>
+            <Footer/>
+
+            {/* Custom CSS for animations and sliders */}
+            <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-slideDown {
+          animation: slideDown 0.3s ease-out;
+        }
+        
+        .slider-thumb::-webkit-slider-thumb {
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #ef4444;
+          cursor: pointer;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .slider-thumb::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #ef4444;
+          cursor: pointer;
+          border: none;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+      `}</style>
+        </div>
+    );
+};
+
+export default RestaurantsPage;
