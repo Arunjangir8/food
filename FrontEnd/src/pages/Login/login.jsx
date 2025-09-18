@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../../context/AuthContext.jsx'; // Add this import
 import * as Components from "../../style/loginstyle.js";
 
 const API_BASE_URL = 'http://localhost:3001/api';
@@ -10,6 +11,11 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth(); // Use the auth context
+
+  // Get the page user was trying to access
+  const from = location.state?.from?.pathname || "/";
 
   // Form states
   const [signInForm, setSignInForm] = useState({
@@ -56,12 +62,11 @@ const Login = () => {
       const response = await axios.post(`${API_BASE_URL}/auth/login`, signInForm);
       
       if (response.data.success) {
-        // Store token and user data
-        localStorage.setItem('token', response.data.data.token);
-        localStorage.setItem('userProfile', JSON.stringify(response.data.data.user));
+        // Use the auth context login function instead of direct localStorage
+        login(response.data.data.user, response.data.data.token);
         
-        // Redirect to home page
-        navigate('/');
+        // Redirect to the page they were trying to access or home
+        navigate(from, { replace: true });
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
@@ -79,12 +84,11 @@ const Login = () => {
       const response = await axios.post(`${API_BASE_URL}/auth/register`, signUpForm);
       
       if (response.data.success) {
-        // Store token and user data
-        localStorage.setItem('token', response.data.data.token);
-        localStorage.setItem('userProfile', JSON.stringify(response.data.data.user));
+        // Use the auth context login function instead of direct localStorage
+        login(response.data.data.user, response.data.data.token);
         
-        // Redirect to home page
-        navigate('/');
+        // Redirect to home after successful registration
+        navigate('/', { replace: true });
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -191,7 +195,7 @@ const Login = () => {
           </Components.Form>
         </Components.SignInContainer>
         
-        {/* Overlay for desktop/tablet */}
+        {/* Rest of your existing JSX remains the same */}
         <Components.OverlayContainer $isActive={isSignUpActive}>
           <Components.Overlay $isActive={isSignUpActive}>
             <Components.LeftOverlayPanel $isActive={isSignUpActive}>
@@ -214,17 +218,16 @@ const Login = () => {
             </Components.RightOverlayPanel>
           </Components.Overlay>
         </Components.OverlayContainer>
+        
+        <Components.MobileToggleContainer>
+          <Components.MobileToggleButton onClick={handleToggle} disabled={loading}>
+            {signIn 
+              ? "Don't have an account? Sign Up" 
+              : "Already have an account? Sign In"
+            }
+          </Components.MobileToggleButton>
+        </Components.MobileToggleContainer>
       </Components.Container>
-      
-      {/* Mobile toggle */}
-      <Components.MobileToggleContainer>
-        <Components.MobileToggleButton onClick={handleToggle} disabled={loading}>
-          {signIn 
-            ? "Don't have an account? Sign Up" 
-            : "Already have an account? Sign In"
-          }
-        </Components.MobileToggleButton>
-      </Components.MobileToggleContainer>
     </Components.AppWrapper>
   );
 };

@@ -1,14 +1,18 @@
-import AnimatedFoodAuth from './pages/Login/login.jsx'
+import Login from './pages/Login/login.jsx'
 import { Dashboard } from './pages/Home/dashboard.jsx'
 import RestaurantsPage from './pages/Restaurants/restaurantsPage.jsx'
 import RestaurantDetailsPage from './pages/Restaurants/restaurantDetails.jsx'
+import OrdersPage from './pages/Orders/currentOrders.jsx'
 import ProfilePage from './pages/Profile/ProfilePage.jsx'
 import CartPage from './pages/Cart/index.jsx'
 import FavoritesPage from './pages/Favorites/index.jsx'
 import Navbar from './components/Navbar/header.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
+import PublicRoute from './components/PublicRoute.jsx'
+import { AuthProvider } from './context/AuthContext.jsx'
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
-// Layout component for pages with Navbar and Footer
+// Layout component for pages with Navbar
 const Layout = () => {
   return (
     <>
@@ -23,29 +27,39 @@ const Layout = () => {
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Login route without layout */}
-        <Route path="/login" element={<AnimatedFoodAuth />} />
-        
-        {/* Routes with shared layout */}
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Dashboard />} /> 
-          <Route path="home" element={<Dashboard />} />
-
-          <Route path="restaurants" element={<RestaurantsPage/> } />
-          <Route path="restaurants/:id" element={<RestaurantDetailsPage/>} />
-        
-          <Route path="my-orders/current" element={<></>} />
+      <AuthProvider>
+        <Routes>
+          {/* Public routes - only accessible when NOT logged in */}
+          <Route path="/login" element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } />
           
-          <Route path="cart" element={<CartPage/> } />
-          <Route path="favorites" element={<FavoritesPage/> } />
-
-          <Route path="profile" element={<ProfilePage/> } />
-        </Route>
-        
-        {/* Catch all route - redirect to home */}
-        <Route path="*" element={<Layout><Dashboard /></Layout>} />
-      </Routes>
+          {/* Protected routes - only accessible when logged in */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<Dashboard />} /> 
+            <Route path="home" element={<Dashboard />} />
+            <Route path="restaurants" element={<RestaurantsPage />} />
+            <Route path="restaurants/:id" element={<RestaurantDetailsPage />} />
+            <Route path="my-orders/current" element={<OrdersPage/>} />
+            <Route path="cart" element={<CartPage />} />
+            <Route path="favorites" element={<FavoritesPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+          </Route>
+          
+          {/* Catch all route - redirect based on auth status */}
+          <Route path="*" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   )
 }

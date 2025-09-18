@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext.jsx'; // Import useAuth
 import { 
   HiOutlineMenuAlt3, 
   HiX, 
@@ -7,11 +8,14 @@ import {
   HiOutlineShoppingCart,
   HiOutlineUser,
   HiOutlineHeart,
-  HiChevronDown
+  HiChevronDown,
+  HiOutlineLogout
 } from 'react-icons/hi';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user, logout, isAuthenticated } = useAuth(); // Use auth context
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [cartItemsCount, setCartItemsCount] = useState(0);
@@ -94,11 +98,20 @@ const Navbar = () => {
     setIsOpen(false); // Close mobile menu after navigation
   };
 
+  const handleLogout = () => {
+    logout();
+    setIsOpen(false);
+    navigate('/login');
+  };
+
+  // Navigation links based on authentication status
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Restaurants', href: '/restaurants' },
-    { name: 'Current Order', href: '/my-orders' },
-    { name: 'Profile', href: '/profile' },
+    ...(isAuthenticated ? [
+      { name: 'My Orders', href: '/my-orders/current' },
+      { name: 'Profile', href: '/profile' }
+    ] : [])
   ];
 
   return (
@@ -146,7 +159,11 @@ const Navbar = () => {
                 <button
                   key={link.name}
                   onClick={() => handleNavigation(link.href)}
-                  className="text-gray-700 hover:text-red-500 font-medium px-4 py-2 rounded-lg hover:bg-red-50 transition-all duration-200 relative group"
+                  className={`font-medium px-4 py-2 rounded-lg transition-all duration-200 relative group ${
+                    location.pathname === link.href
+                      ? 'text-red-500 bg-red-50'
+                      : 'text-gray-700 hover:text-red-500 hover:bg-red-50'
+                  }`}
                 >
                   {link.name}
                   <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-red-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left"></span>
@@ -159,41 +176,69 @@ const Navbar = () => {
               
               {/* Desktop Action Buttons */}
               <div className="hidden md:flex items-center space-x-3">
-                <button 
-                  onClick={() => handleNavigation('/favorites')}
-                  className="p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 relative"
-                  aria-label={`Favorites ${favoritesCount > 0 ? `(${favoritesCount} items)` : ''}`}
-                >
-                  <HiOutlineHeart className="w-5 h-5" />
-                  {favoritesCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                      {favoritesCount > 99 ? '99+' : favoritesCount}
-                    </span>
-                  )}
-                </button>
+                {isAuthenticated && (
+                  <>
+                    <button 
+                      onClick={() => handleNavigation('/favorites')}
+                      className="p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 relative"
+                      aria-label={`Favorites ${favoritesCount > 0 ? `(${favoritesCount} items)` : ''}`}
+                    >
+                      <HiOutlineHeart className="w-5 h-5" />
+                      {favoritesCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                          {favoritesCount > 99 ? '99+' : favoritesCount}
+                        </span>
+                      )}
+                    </button>
+                    
+                    <button 
+                      onClick={() => handleNavigation('/cart')}
+                      className="relative p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200"
+                      aria-label={`Shopping cart ${cartItemsCount > 0 ? `(${cartItemsCount} items)` : ''}`}
+                    >
+                      <HiOutlineShoppingCart className="w-5 h-5" />
+                      {cartItemsCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                          {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                        </span>
+                      )}
+                    </button>
+                    
+                    <div className="w-px h-6 bg-gray-200 mx-3"></div>
+                  </>
+                )}
                 
-                <button 
-                  onClick={() => handleNavigation('/cart')}
-                  className="relative p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200"
-                  aria-label={`Shopping cart ${cartItemsCount > 0 ? `(${cartItemsCount} items)` : ''}`}
-                >
-                  <HiOutlineShoppingCart className="w-5 h-5" />
-                  {cartItemsCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                      {cartItemsCount > 99 ? '99+' : cartItemsCount}
-                    </span>
-                  )}
-                </button>
-                
-                <div className="w-px h-6 bg-gray-200 mx-3"></div>
-                
-                <button 
-                  onClick={() => handleNavigation('/login')}
-                  className="flex items-center space-x-2 px-6 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
-                >
-                  <HiOutlineUser className="w-4 h-4" />
-                  <span>Login</span>
-                </button>
+                {/* User Profile / Login Section */}
+                {isAuthenticated ? (
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={() => handleNavigation('/profile')}
+                      className="flex items-center space-x-2 px-4 py-2.5 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 font-medium"
+                    >
+                      <HiOutlineUser className="w-4 h-4" />
+                      <span className="max-w-24 truncate">
+                        {user?.name || 'Profile'}
+                      </span>
+                    </button>
+                    
+                    <button 
+                      onClick={handleLogout}
+                      className="flex items-center space-x-2 px-4 py-2.5 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 font-medium"
+                      title="Logout"
+                    >
+                      <HiOutlineLogout className="w-4 h-4" />
+                      <span className="hidden xl:inline">Logout</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => handleNavigation('/login')}
+                    className="flex items-center space-x-2 px-6 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+                  >
+                    <HiOutlineUser className="w-4 h-4" />
+                    <span>Login</span>
+                  </button>
+                )}
               </div>
 
               {/* Mobile Menu Button */}
@@ -236,6 +281,27 @@ const Navbar = () => {
           isOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
         }`}>
           
+          {/* User Info - Mobile */}
+          {isAuthenticated && (
+            <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-red-50 to-orange-50">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">
+                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-gray-800">
+                    {user?.name || 'User'}
+                  </span>
+                  <span className="text-xs text-gray-500 block">
+                    {user?.email || 'user@example.com'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {/* Location - Mobile */}
           <div className="p-6 border-b border-gray-100 bg-gray-50">
             <div className="flex items-center space-x-3 text-gray-700">
@@ -256,7 +322,11 @@ const Navbar = () => {
               <button
                 key={link.name}
                 onClick={() => handleNavigation(link.href)}
-                className={`w-full text-left flex items-center px-6 py-4 text-gray-700 hover:bg-red-50 hover:text-red-500 transition-all duration-200 transform border-b border-gray-50 ${
+                className={`w-full text-left flex items-center px-6 py-4 hover:bg-red-50 hover:text-red-500 transition-all duration-200 transform border-b border-gray-50 ${
+                  location.pathname === link.href
+                    ? 'bg-red-50 text-red-500 font-semibold'
+                    : 'text-gray-700'
+                } ${
                   isOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
                 }`}
                 style={{ transitionDelay: `${index * 50}ms` }}
@@ -268,43 +338,55 @@ const Navbar = () => {
 
           {/* Action Buttons - Mobile */}
           <div className="p-6 border-t border-gray-100 space-y-3 bg-gray-50">
-            <button 
-              onClick={() => handleNavigation('/favorites')}
-              className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-xl hover:bg-white transition-all duration-200 font-medium"
-            >
-              <div className="flex items-center space-x-3">
-                <HiOutlineHeart className="w-5 h-5 text-gray-600" />
-                <span>Favorites</span>
-              </div>
-              {favoritesCount > 0 && (
-                <span className="bg-pink-500 text-white text-xs rounded-full px-2.5 py-1 font-semibold">
-                  {favoritesCount > 99 ? '99+' : favoritesCount}
-                </span>
-              )}
-            </button>
+            {isAuthenticated ? (
+              <>
+                <button 
+                  onClick={() => handleNavigation('/favorites')}
+                  className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-xl hover:bg-white transition-all duration-200 font-medium"
+                >
+                  <div className="flex items-center space-x-3">
+                    <HiOutlineHeart className="w-5 h-5 text-gray-600" />
+                    <span>Favorites</span>
+                  </div>
+                  {favoritesCount > 0 && (
+                    <span className="bg-pink-500 text-white text-xs rounded-full px-2.5 py-1 font-semibold">
+                      {favoritesCount > 99 ? '99+' : favoritesCount}
+                    </span>
+                  )}
+                </button>
 
-            <button 
-              onClick={() => handleNavigation('/cart')}
-              className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-xl hover:bg-white transition-all duration-200 font-medium"
-            >
-              <div className="flex items-center space-x-3">
-                <HiOutlineShoppingCart className="w-5 h-5 text-gray-600" />
-                <span>Cart</span>
-              </div>
-              {cartItemsCount > 0 && (
-                <span className="bg-red-500 text-white text-xs rounded-full px-2.5 py-1 font-semibold">
-                  {cartItemsCount > 99 ? '99+' : cartItemsCount}
-                </span>
-              )}
-            </button>
+                <button 
+                  onClick={() => handleNavigation('/cart')}
+                  className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-xl hover:bg-white transition-all duration-200 font-medium"
+                >
+                  <div className="flex items-center space-x-3">
+                    <HiOutlineShoppingCart className="w-5 h-5 text-gray-600" />
+                    <span>Cart</span>
+                  </div>
+                  {cartItemsCount > 0 && (
+                    <span className="bg-red-500 text-white text-xs rounded-full px-2.5 py-1 font-semibold">
+                      {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                    </span>
+                  )}
+                </button>
 
-            <button 
-              onClick={() => handleNavigation('/login')}
-              className="flex items-center justify-center w-full space-x-3 px-4 py-4 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 font-medium shadow-md"
-            >
-              <HiOutlineUser className="w-5 h-5" />
-              <span>Login / Sign Up</span>
-            </button>
+                <button 
+                  onClick={handleLogout}
+                  className="flex items-center justify-center w-full space-x-3 px-4 py-4 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-all duration-200 font-medium shadow-md"
+                >
+                  <HiOutlineLogout className="w-5 h-5" />
+                  <span>Logout</span>
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={() => handleNavigation('/login')}
+                className="flex items-center justify-center w-full space-x-3 px-4 py-4 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 font-medium shadow-md"
+              >
+                <HiOutlineUser className="w-5 h-5" />
+                <span>Login / Sign Up</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
