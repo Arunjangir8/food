@@ -97,9 +97,8 @@ const Navbar = () => {
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Restaurants', href: '/restaurants' },
-    { name: 'My Orders', href: '/my-orders' },
+    { name: 'Current Order', href: '/my-orders' },
     { name: 'Profile', href: '/profile' },
-    { name: 'Contact', href: '/contact' }
   ];
 
   return (
