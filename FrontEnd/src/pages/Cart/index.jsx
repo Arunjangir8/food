@@ -161,6 +161,12 @@ const CartPage = () => {
   const finalTotal = cartTotal + deliveryInfo.fee - discount;
   const groupedCart = cartUtils.groupCartByRestaurant();
 
+  const handlePayment = (amount) => {
+    alert(`Proceeding to payment of ₹${amount}`);
+    clearAllItems();
+    navigate('/my-orders')
+  }
+
   const ClearConfirmModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
@@ -430,8 +436,7 @@ const CartPage = () => {
                 {/* Checkout Button */}
                 <button
                   onClick={() => {
-                    alert('Proceeding to payment...');
-                    // Here you would integrate with a payment gateway
+                    handlePayment(finalTotal + Math.round(cartTotal * 0.05));
                   }}
                   className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
                 >

@@ -17,7 +17,7 @@ const RestaurantsPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedLocation, setSelectedLocation] = useState('Delhi');
     const [selectedCuisine, setSelectedCuisine] = useState('All');
-    const [favorites, setFavorites] = useState(new Set());
+    // const [favorites, setFavorites] = useState(new Set());
     const [sortBy, setSortBy] = useState('rating');
 
     // New filter states
@@ -173,15 +173,15 @@ const RestaurantsPage = () => {
     const cuisines = ['All', 'Italian', 'American', 'Japanese', 'Mexican', 'Indian', 'Continental'];
     const locations = ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata'];
 
-    const toggleFavorite = (id) => {
-        const newFavorites = new Set(favorites);
-        if (newFavorites.has(id)) {
-            newFavorites.delete(id);
-        } else {
-            newFavorites.add(id);
-        }
-        setFavorites(newFavorites);
-    };
+    // const toggleFavorite = (id) => {
+    //     const newFavorites = new Set(favorites);
+    //     if (newFavorites.has(id)) {
+    //         newFavorites.delete(id);
+    //     } else {
+    //         newFavorites.add(id);
+    //     }
+    //     setFavorites(newFavorites);
+    // };
 
     const filteredRestaurants = restaurants
         .filter(restaurant => {
@@ -486,7 +486,7 @@ const RestaurantsPage = () => {
                                     </div>
 
                                     {/* Favorite Button */}
-                                    <button
+                                    {/* <button
                                         onClick={() => toggleFavorite(restaurant.id)}
                                         className="absolute bottom-4 right-4 p-2 bg-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-110"
                                     >
@@ -495,7 +495,7 @@ const RestaurantsPage = () => {
                                         ) : (
                                             <HiOutlineHeart className="w-5 h-5 text-gray-400" />
                                         )}
-                                    </button>
+                                    </button> */}
                                 </div>
                             </div>
 

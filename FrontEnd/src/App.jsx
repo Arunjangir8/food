@@ -33,9 +33,9 @@ function App() {
 
           <Route path="restaurants" element={<RestaurantsPage/> } />
           <Route path="restaurants/:id" element={<RestaurantDetailsPage/>} />
-          {/* Dynamic routes for specific items */}
-          <Route path="cuisines" element={<></>} />
-          <Route path="cuisines/:cuisineType" element={<></>} />
+        
+          <Route path="my-orders/current" element={<></>} />
+          <Route path="my-orders/all" element={<></>} />
           
           <Route path="cart" element={<CartPage/> } />
           <Route path="favorites" element={<FavoritesPage/> } />
