@@ -2,6 +2,7 @@ import AnimatedFoodAuth from './pages/Login/login.jsx'
 import { Dashboard } from './pages/Home/dashboard.jsx'
 import RestaurantsPage from './pages/Restaurants/restaurantsPage.jsx'
 import RestaurantDetailsPage from './pages/Restaurants/restaurantDetails.jsx'
+import ProfilePage from './pages/Profile/ProfilePage.jsx'
 import CartPage from './pages/Cart/index.jsx'
 import FavoritesPage from './pages/Favorites/index.jsx'
 import Navbar from './components/Navbar/header.jsx'
@@ -35,12 +36,11 @@ function App() {
           <Route path="restaurants/:id" element={<RestaurantDetailsPage/>} />
         
           <Route path="my-orders/current" element={<></>} />
-          <Route path="my-orders/all" element={<></>} />
           
           <Route path="cart" element={<CartPage/> } />
           <Route path="favorites" element={<FavoritesPage/> } />
-          {/* Nested routes for restaurants with cuisine filter */}
-          <Route path="restaurants/cuisine/:cuisineType" element={<></>} />
+
+          <Route path="profile" element={<ProfilePage/> } />
         </Route>
         
         {/* Catch all route - redirect to home */}
