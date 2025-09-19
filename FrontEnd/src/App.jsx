@@ -1,4 +1,6 @@
 import Login from './pages/Login/login.jsx'
+import LoginRestaurantPage from './pages/Login/restaurantLogin.jsx'
+import RestaurantSignupPage from './pages/Login/restaurantSignup.jsx'
 import { Dashboard } from './pages/Home/dashboard.jsx'
 import RestaurantsPage from './pages/Restaurants/restaurantsPage.jsx'
 import RestaurantDetailsPage from './pages/Restaurants/restaurantDetails.jsx'
@@ -35,7 +37,17 @@ function App() {
               <Login />
             </PublicRoute>
           } />
-          
+          <Route path="/restaurant/create" element={
+            <PublicRoute>
+              <RestaurantSignupPage />
+            </PublicRoute>
+          } />
+
+          <Route path="/restaurant/login" element={
+            <PublicRoute>
+              <LoginRestaurantPage />
+            </PublicRoute>
+          } />
           {/* Protected routes - only accessible when logged in */}
           <Route path="/" element={
             <ProtectedRoute>

@@ -164,7 +164,7 @@ const CartPage = () => {
   const handlePayment = (amount) => {
     alert(`Proceeding to payment of ₹${amount}`);
     clearAllItems();
-    navigate('/my-orders')
+    navigate('/my-orders/current')
   }
 
   const ClearConfirmModal = () => (
