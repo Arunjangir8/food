@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { orderAPI, userAPI } from '../../services/api.js';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { localStorageUtils } from '../../utils/localStorage.js';
 import toast from 'react-hot-toast';
 import { 
   HiOutlineArrowLeft,
@@ -18,75 +19,7 @@ import {
   HiOutlineCreditCard
 } from 'react-icons/hi';
 
-// Cart utility functions (same as before)
-const cartUtils = {
-  getCart: () => {
-    try {
-      const cart = localStorage.getItem('foodCart');
-      return cart ? JSON.parse(cart) : [];
-    } catch (error) {
-      console.error('Error getting cart from localStorage:', error);
-      return [];
-    }
-  },
 
-  saveCart: (cart) => {
-    try {
-      localStorage.setItem('foodCart', JSON.stringify(cart));
-    } catch (error) {
-      console.error('Error saving cart to localStorage:', error);
-    }
-  },
-
-  updateQuantity: (cartItemId, change) => {
-    const cart = cartUtils.getCart();
-    const updatedCart = cart.map(item => 
-      item.id === cartItemId 
-        ? { ...item, quantity: Math.max(1, item.quantity + change) }
-        : item
-    );
-    cartUtils.saveCart(updatedCart);
-    return updatedCart;
-  },
-
-  removeFromCart: (cartItemId) => {
-    const cart = cartUtils.getCart();
-    const updatedCart = cart.filter(item => item.id !== cartItemId);
-    cartUtils.saveCart(updatedCart);
-    return updatedCart;
-  },
-
-  clearCart: () => {
-    cartUtils.saveCart([]);
-    return [];
-  },
-
-  getCartTotal: () => {
-    const cart = cartUtils.getCart();
-    return cart.reduce((total, item) => total + (item.totalPrice * item.quantity), 0);
-  },
-
-  getCartItemsCount: () => {
-    const cart = cartUtils.getCart();
-    return cart.reduce((total, item) => total + item.quantity, 0);
-  },
-
-  groupCartByRestaurant: () => {
-    const cart = cartUtils.getCart();
-    const grouped = cart.reduce((acc, item) => {
-      const restaurantId = item.restaurantId || 'unknown';
-      if (!acc[restaurantId]) {
-        acc[restaurantId] = {
-          restaurantName: item.restaurantName || 'Unknown Restaurant',
-          items: []
-        };
-      }
-      acc[restaurantId].items.push(item);
-      return acc;
-    }, {});
-    return grouped;
-  }
-};
 
 const CartPage = () => {
   const navigate = useNavigate();
@@ -97,13 +30,11 @@ const CartPage = () => {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
-
-  // Mock delivery info
-  const deliveryInfo = {
+  const [deliveryInfo, setDeliveryInfo] = useState({
     fee: 25,
     estimatedTime: '25-35 mins',
     address: '123 Main Street, Apartment 4B, Delhi - 110001'
-  };
+  });
 
   // Mock default address for testing
   const mockAddress = {
@@ -122,32 +53,76 @@ const CartPage = () => {
     'FIRST20': { discount: 20, type: 'percentage', minOrder: 150 }
   };
 
-  // Load cart from localStorage on component mount
+  // Load cart from localStorage and sync with DB for accurate pricing
   useEffect(() => {
-    setIsLoading(true);
-    try {
-      const savedCart = cartUtils.getCart();
-      setCart(savedCart);
-    } catch (error) {
-      console.error('Error loading cart:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    const loadAndSyncCart = async () => {
+      setIsLoading(true);
+      try {
+        // Get cart from localStorage first
+        const localCart = localStorageUtils.getCart();
+        setCart(localCart);
+        
+        // Sync with DB for accurate pricing and availability
+        if (user && localCart.length > 0) {
+          const response = await userAPI.getCart();
+          const dbCart = response.data.data.cartItems;
+          
+          if (dbCart.length > 0) {
+            // Get restaurant info for delivery details
+            const restaurant = dbCart[0].menuItem.category.restaurant;
+            setDeliveryInfo({
+              fee: restaurant.deliveryFee,
+              estimatedTime: restaurant.deliveryTime,
+              address: restaurant.name + ", " + restaurant.address + ", " + restaurant.city + " - " + restaurant.pincode
+            });
+            
+            // Convert API format to local format
+            const syncedCart = dbCart.map(item => ({
+              id: item.id,
+              itemId: item.menuItemId,
+              restaurantId: item.menuItem.category.restaurantId,
+              restaurantName: item.menuItem.category.restaurant.name,
+              name: item.menuItem.name,
+              price: item.menuItem.price,
+              customizations: item.customizations || {},
+              customizationPrice: 0,
+              totalPrice: item.menuItem.price,
+              image: item.menuItem.image || '🍕',
+              quantity: item.quantity
+            }));
+            
+            setCart(syncedCart);
+            localStorageUtils.saveCart(syncedCart);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading cart:', error);
+        // Fallback to localStorage data
+        setCart(localStorageUtils.getCart());
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadAndSyncCart();
+  }, [user]);
 
   const updateQuantity = (cartItemId, change) => {
-    const updatedCart = cartUtils.updateQuantity(cartItemId, change);
+    const currentItem = cart.find(item => item.id === cartItemId);
+    const newQuantity = Math.max(1, currentItem.quantity + change);
+    
+    const updatedCart = localStorageUtils.updateCartItem(cartItemId, { quantity: newQuantity });
     setCart(updatedCart);
   };
 
   const removeFromCart = (cartItemId) => {
-    const updatedCart = cartUtils.removeFromCart(cartItemId);
+    const updatedCart = localStorageUtils.removeFromCart(cartItemId);
     setCart(updatedCart);
   };
 
-  const clearAllItems = () => {
-    const updatedCart = cartUtils.clearCart();
-    setCart(updatedCart);
+  const clearAllItems = async () => {
+    await localStorageUtils.clearCart(!!user);
+    setCart([]);
     setShowClearConfirm(false);
   };
 
@@ -173,10 +148,22 @@ const CartPage = () => {
 
   const cartTotal = cart.reduce((total, item) => total + (item.totalPrice * item.quantity), 0);
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const finalTotal = cartTotal + deliveryInfo.fee - discount;
-  const groupedCart = cartUtils.groupCartByRestaurant();
+  const taxAmount = Math.round(cartTotal * 0.08); // 8% tax
+  const finalTotal = cartTotal + deliveryInfo.fee + taxAmount - discount;
+  
+  const groupedCart = cart.reduce((acc, item) => {
+    const restaurantId = item.restaurantId || 'unknown';
+    if (!acc[restaurantId]) {
+      acc[restaurantId] = {
+        restaurantName: item.restaurantName || 'Unknown Restaurant',
+        items: []
+      };
+    }
+    acc[restaurantId].items.push(item);
+    return acc;
+  }, {});
 
-  const handlePayment = async (amount) => {
+  const handlePayment = async () => {
     try {
       setIsPlacingOrder(true);
       
@@ -203,14 +190,9 @@ const CartPage = () => {
         console.log('Using mock address for testing:', error.message);
       }
       
-      // Group cart items by restaurant - fix restaurant ID mapping
-      const restaurantIdMap = {
-        '1': 'cmfs532l70003oxxm9u3jh6bl', // Pizza Palace
-        'cmfs532l70003oxxm9u3jh6bl': 'cmfs532l70003oxxm9u3jh6bl' // Already correct
-      };
-      
+      // Group cart items by restaurant
       const restaurantGroups = cart.reduce((groups, item) => {
-        const restaurantId = restaurantIdMap[item.restaurantId] || item.restaurantId;
+        const restaurantId = item.restaurantId;
         if (!groups[restaurantId]) {
           groups[restaurantId] = [];
         }
@@ -236,7 +218,7 @@ const CartPage = () => {
       await Promise.all(orderPromises);
       
       toast.success('Order placed successfully!');
-      clearAllItems();
+      await clearAllItems();
       navigate('/my-orders/current');
     } catch (error) {
       console.error('Order creation failed:', error);
@@ -249,7 +231,7 @@ const CartPage = () => {
 
   const ClearConfirmModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+      <div className="bg-white rounded-md p-6 max-w-sm w-full">
         <div className="text-center mb-6">
           <HiOutlineTrash className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-gray-900 mb-2">Clear Cart?</h3>
@@ -259,13 +241,13 @@ const CartPage = () => {
         <div className="flex space-x-4">
           <button
             onClick={() => setShowClearConfirm(false)}
-            className="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+            className="flex-1 py-2 px-4 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-200"
           >
             Cancel
           </button>
           <button
             onClick={clearAllItems}
-            className="flex-1 py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+            className="flex-1 py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200"
           >
             Clear All
           </button>
@@ -286,7 +268,7 @@ const CartPage = () => {
   }
 
   return (
-    <div className="min-h-screen w-[100vw] pt-20 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
+    <div className="min-h-screen w-[100vw] pt-16 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
       {/* Background Decorations */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 right-20 w-96 h-96 bg-red-100 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-pulse"></div>
@@ -307,8 +289,7 @@ const CartPage = () => {
                 </button>
                 
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
-                    <HiOutlineShoppingCart className="w-6 h-6" />
+                  <h1 className="text-xl font-bold text-gray-900 flex items-center space-x-2">
                     <span>Your Cart</span>
                   </h1>
                   {cart.length > 0 && (
@@ -320,7 +301,7 @@ const CartPage = () => {
               {cart.length > 0 && (
                 <button
                   onClick={() => setShowClearConfirm(true)}
-                  className="flex items-center space-x-2 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                  className="flex items-center space-x-2 px-4 py-2 text-red-500 hover:bg-red-50 rounded-md transition-colors duration-200"
                 >
                   <HiOutlineTrash className="w-4 h-4" />
                   <span className="text-sm font-medium">Clear Cart</span>
@@ -340,7 +321,7 @@ const CartPage = () => {
               
               <button
                 onClick={() => navigate('/restaurants')}
-                className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg"
+                className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-md font-semibold transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg"
               >
                 Browse Restaurants
               </button>
@@ -352,7 +333,7 @@ const CartPage = () => {
             {/* Left Side - Cart Items */}
             <div className="flex-1">
               {/* Delivery Address */}
-              <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+              <div className="bg-white rounded-md shadow-lg p-6 mb-6">
                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center space-x-2">
                   <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
                   <span>Delivery Address</span>
@@ -372,7 +353,7 @@ const CartPage = () => {
 
               {/* Cart Items grouped by restaurant */}
               {Object.entries(groupedCart).map(([restaurantId, restaurant]) => (
-                <div key={restaurantId} className="bg-white rounded-2xl shadow-lg mb-6">
+                <div key={restaurantId} className="bg-white rounded-md shadow-lg mb-6">
                   <div className="p-6 border-b border-gray-200">
                     <h3 className="text-xl font-bold text-gray-900">{restaurant.restaurantName}</h3>
                   </div>
@@ -380,8 +361,8 @@ const CartPage = () => {
                   <div className="p-6">
                     <div className="space-y-4">
                       {restaurant.items.map(cartItem => (
-                        <div key={cartItem.id} className="flex items-start space-x-4 p-4 border border-gray-200 rounded-xl">
-                          <div className="w-16 h-16 bg-gradient-to-br from-orange-200 to-red-200 rounded-xl flex items-center justify-center text-2xl">
+                        <div key={cartItem.id} className="flex items-start space-x-4 p-4 border border-gray-200 rounded-md">
+                          <div className="w-16 h-16 bg-gradient-to-br from-orange-200 to-red-200 rounded-md flex items-center justify-center text-2xl">
                             {cartItem.image}
                           </div>
                           
@@ -448,10 +429,10 @@ const CartPage = () => {
               ))}
 
               {/* Add More Items */}
-              <div className="bg-white rounded-2xl shadow-lg p-6">
+              <div className="bg-white rounded-md shadow-lg p-6">
                 <button
                   onClick={() => navigate('/restaurants')}
-                  className="w-full py-4 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-red-300 hover:text-red-500 transition-all duration-200 flex items-center justify-center space-x-2"
+                  className="w-full py-4 border-2 border-dashed border-gray-300 rounded-md text-gray-600 hover:border-red-300 hover:text-red-500 transition-all duration-200 flex items-center justify-center space-x-2"
                 >
                   <HiPlus className="w-5 h-5" />
                   <span>Add more items</span>
@@ -461,7 +442,7 @@ const CartPage = () => {
 
             {/* Right Side - Order Summary */}
             <div className="w-full lg:w-96">
-              <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+              <div className="bg-white rounded-md shadow-lg p-6 sticky top-24">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h3>
 
                 {/* Promo Code */}
@@ -475,11 +456,11 @@ const CartPage = () => {
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value)}
                       placeholder="Enter promo code"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
                     <button
                       onClick={applyPromoCode}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+                      className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200"
                     >
                       Apply
                     </button>
@@ -503,23 +484,23 @@ const CartPage = () => {
                     </div>
                   )}
                   <div className="flex justify-between text-gray-600">
-                    <span>Taxes & Fees</span>
-                    <span>₹{Math.round(cartTotal * 0.05)}</span>
+                    <span>Taxes & Fees (8%)</span>
+                    <span>₹{taxAmount}</span>
                   </div>
                   <hr className="border-gray-200" />
                   <div className="flex justify-between font-bold text-xl text-gray-900">
                     <span>Total</span>
-                    <span>₹{finalTotal + Math.round(cartTotal * 0.05)}</span>
+                    <span>₹{finalTotal}</span>
                   </div>
                 </div>
 
                 {/* Checkout Button */}
                 <button
                   onClick={() => {
-                    handlePayment(finalTotal + Math.round(cartTotal * 0.05));
+                    handlePayment(finalTotal);
                   }}
                   disabled={isPlacingOrder}
-                  className="w-full py-4 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 disabled:cursor-not-allowed"
+                  className="w-full py-4 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white font-bold rounded-md transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 disabled:cursor-not-allowed"
                 >
                   {isPlacingOrder ? (
                     <>

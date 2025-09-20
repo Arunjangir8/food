@@ -45,7 +45,7 @@ const Hero = () => {
               </div>
 
               {/* Search Section */}
-              <div className="bg-white rounded-2xl shadow-2xl p-2 max-w-2xl mx-auto lg:mx-0 border border-gray-100">
+              <div className="bg-white rounded-lg shadow-2xl p-2 max-w-2xl mx-auto lg:mx-0 border border-gray-100">
                 <div className="flex flex-col sm:flex-row gap-2">
                   {/* Search Input */}
                   <div className="relative flex-1 min-w-0">
@@ -55,13 +55,13 @@ const Hero = () => {
                       placeholder="Search for restaurant, cuisine or dish"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-12 pr-4 py-4 text-gray-700 placeholder-gray-400 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all duration-200"
+                      className="w-full pl-12 pr-4 py-4 text-gray-700 placeholder-gray-400 bg-gray-50 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all duration-200"
                     />
                   </div>
                   {/* Search Button */}
                   <button
                     onClick={handleSearch}
-                    className="px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-2"
+                    className="px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-2"
                   >
                     <HiOutlineSearch className="w-5 h-5" />
                     <span className="hidden sm:inline">Search</span>
@@ -71,12 +71,12 @@ const Hero = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-                <button className="w-full sm:w-auto px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-2">
+                <button className="w-full sm:w-auto px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-2">
                   <HiOutlineTruck className="w-5 h-5" />
                   <span>Order Now</span>
                 </button>
                 
-                <button className="w-full sm:w-auto px-8 py-4 border-2 border-gray-300 hover:border-red-500 text-gray-700 hover:text-red-500 font-semibold rounded-xl transition-all duration-200 flex items-center justify-center space-x-2 group">
+                <button className="w-full sm:w-auto px-8 py-4 border-2 border-gray-300 hover:border-red-500 text-gray-700 hover:text-red-500 font-semibold rounded-md transition-all duration-200 flex items-center justify-center space-x-2 group">
                   <HiPlay className="w-5 h-5 group-hover:text-red-500" />
                   <span>Watch Demo</span>
                 </button>

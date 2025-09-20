@@ -23,9 +23,11 @@ import { AuthProvider } from './context/AuthContext.jsx'
 import { LocationProvider } from './context/LocationContext.jsx'
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
+import { useDataSync } from './hooks/useDataSync.js';
 
 // Layout component for pages with Navbar
 const Layout = () => {
+  useDataSync(); // Sync data when user logs in
   return (
     <>
       <Navbar />

@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useLocation as useLocationContext } from '../../context/LocationContext.jsx';
-import { 
-  HiOutlineMenuAlt3, 
-  HiX, 
+import { localStorageUtils } from '../../utils/localStorage.js';
+import {
+  HiOutlineMenuAlt3,
+  HiX,
   HiOutlineLocationMarker,
   HiOutlineShoppingCart,
   HiOutlineUser,
@@ -55,51 +56,37 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showLocationDropdown]);
 
-  // Load and listen to localStorage changes for cart and favorites
+  // Load cart and favorites count from localStorage
   useEffect(() => {
     const updateCounts = () => {
-      try {
-        // Update cart count
-        const cart = JSON.parse(localStorage.getItem('foodCart') || '[]');
-        const totalCartItems = cart.reduce((total, item) => total + (item.quantity || 0), 0);
-        setCartItemsCount(totalCartItems);
+      const cart = localStorageUtils.getCart();
+      const favorites = localStorageUtils.getFavorites();
 
-        // Update favorites count
-        const favorites = JSON.parse(localStorage.getItem('foodFavorites') || '[]');
-        setFavoritesCount(favorites.length);
-      } catch (error) {
-        console.error('Error reading from localStorage:', error);
-        setCartItemsCount(0);
-        setFavoritesCount(0);
-      }
+      const totalCartItems = cart.reduce((total, item) => total + item.quantity, 0);
+      setCartItemsCount(totalCartItems);
+      setFavoritesCount(favorites.length);
     };
 
-    // Initial load
     updateCounts();
 
-    // Listen for storage changes from other tabs
-    const handleStorageChange = (e) => {
-      if (e.key === 'foodCart' || e.key === 'foodFavorites') {
-        updateCounts();
-      }
+    // Listen for storage updates
+    const handleCartUpdate = () => {
+      const cart = localStorageUtils.getCart();
+      const totalCartItems = cart.reduce((total, item) => total + item.quantity, 0);
+      setCartItemsCount(totalCartItems);
     };
 
-    // Listen for custom events for same-tab updates
-    const handleCartUpdate = () => updateCounts();
-    const handleFavoritesUpdate = () => updateCounts();
+    const handleFavoritesUpdate = () => {
+      const favorites = localStorageUtils.getFavorites();
+      setFavoritesCount(favorites.length);
+    };
 
-    window.addEventListener('storage', handleStorageChange);
     window.addEventListener('cartUpdated', handleCartUpdate);
     window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
 
-    // Alternative: Use a more frequent check (optional)
-    const interval = setInterval(updateCounts, 1000);
-
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('cartUpdated', handleCartUpdate);
       window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
-      clearInterval(interval);
     };
   }, []);
 
@@ -121,13 +108,12 @@ const Navbar = () => {
   // Navigation links based on user role
   const getNavLinks = () => {
     if (!isAuthenticated) return [];
-    
+
     if (user?.role === 'CUSTOMER') {
       return [
         { name: 'Home', href: '/' },
         { name: 'Restaurants', href: '/restaurants' },
         { name: 'My Orders', href: '/my-orders/current' },
-        { name: 'Profile', href: '/profile' }
       ];
     } else if (user?.role === 'RESTAURANT_OWNER') {
       return [
@@ -139,25 +125,24 @@ const Navbar = () => {
     }
     return [];
   };
-  
+
   const navLinks = getNavLinks();
 
   return (
     <div>
       {/* Main Navbar */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 mb-8 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg' 
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 mb-8 ${isScrolled
+          ? 'bg-white/95 backdrop-blur-md shadow-lg'
           : 'bg-white'
-      }`}>
-        
+        }`}>
+
         {/* Container with max width for large screens */}
         <div className="max-w-[100%] mx-auto px-6 lg:px-12 xl:px-16">
           <div className="flex justify-between items-center h-16 lg:h-20">
-            
+
             {/* Logo Section */}
             <div className="flex-shrink-0 flex items-center">
-              <button 
+              <button
                 onClick={() => handleNavigation('/')}
                 className="text-2xl lg:text-3xl font-bold text-red-500 hover:text-red-600 transition-colors duration-200"
               >
@@ -167,56 +152,54 @@ const Navbar = () => {
               </button>
             </div>
 
-            {/* Desktop Center Section - Location */}
-            <div className="hidden md:flex items-center justify-center">
-              <div className="relative location-dropdown">
-                <div 
-                  className="flex items-center space-x-2 text-gray-700 hover:text-red-500 cursor-pointer transition-colors duration-200 px-6 py-3 rounded-lg hover:bg-red-50"
-                  onClick={() => setShowLocationDropdown(!showLocationDropdown)}
-                >
-                  <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
-                  <div className="flex flex-col">
-                    <span className="text-xs text-gray-500 font-medium">Deliver to</span>
-                    <span className="text-sm font-semibold flex items-center">
-                      {selectedLocation}
-                      <HiChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${showLocationDropdown ? 'rotate-180' : ''}`} />
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Dropdown */}
-                {showLocationDropdown && (
-                  <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[200px]">
-                    {locations.map(location => (
-                      <button
-                        key={location}
-                        onClick={() => {
-                          setSelectedLocation(location);
-                          setShowLocationDropdown(false);
-                        }}
-                        className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors duration-200 ${
-                          selectedLocation === location ? 'text-red-500 bg-red-50' : 'text-gray-700'
-                        }`}
-                      >
-                        {location}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
 
             {/* Desktop Navigation Links */}
             <div className="hidden lg:flex items-center space-x-8">
+              {/* Desktop Center Section - Location */}
+              <div className="hidden md:flex items-center justify-center">
+                <div className="relative location-dropdown">
+                  <div
+                    className="flex items-center space-x-2 text-gray-700 hover:text-red-500 cursor-pointer transition-colors duration-200 px-6 py-3 rounded-md hover:bg-red-50"
+                    onClick={() => setShowLocationDropdown(!showLocationDropdown)}
+                  >
+                    <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
+                    <div className="flex flex-col">
+                      <span className="text-xs text-gray-500 font-medium">Deliver to</span>
+                      <span className="text-sm font-semibold flex items-center">
+                        {selectedLocation}
+                        <HiChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${showLocationDropdown ? 'rotate-180' : ''}`} />
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Dropdown */}
+                  {showLocationDropdown && (
+                    <div className="absolute top-full left-0 mt-2 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-50 min-w-[200px]">
+                      {locations.map(location => (
+                        <button
+                          key={location}
+                          onClick={() => {
+                            setSelectedLocation(location);
+                            setShowLocationDropdown(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors duration-200 ${selectedLocation === location ? 'text-red-500 bg-red-50' : 'text-gray-700'
+                            }`}
+                        >
+                          {location}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
               {navLinks.map((link) => (
                 <button
                   key={link.name}
                   onClick={() => handleNavigation(link.href)}
-                  className={`font-medium px-4 py-2 rounded-lg transition-all duration-200 relative group ${
-                    location.pathname === link.href
+                  className={`font-medium px-4 py-2 rounded-md transition-all duration-200 relative group ${location.pathname === link.href
                       ? 'text-red-500 bg-red-50'
                       : 'text-gray-700 hover:text-red-500 hover:bg-red-50'
-                  }`}
+                    }`}
                 >
                   {link.name}
                   <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-red-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left"></span>
@@ -226,29 +209,31 @@ const Navbar = () => {
 
             {/* Right Side Actions */}
             <div className="flex items-center space-x-2 lg:space-x-4">
-              
+
               {/* Desktop Action Buttons */}
               <div className="hidden md:flex items-center space-x-3">
                 {isAuthenticated && (
                   <>
                     {user?.role === 'CUSTOMER' && (
                       <>
-                        <button 
+                        <button
                           onClick={() => handleNavigation('/favorites')}
-                          className="p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 relative"
+                          className={`p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-md transition-all duration-200 relative ${location.pathname === '/favorites' ? 'text-red-500 bg-red-50' : ''
+                            }`}
                           aria-label={`Favorites ${favoritesCount > 0 ? `(${favoritesCount} items)` : ''}`}
                         >
                           <HiOutlineHeart className="w-5 h-5" />
                           {favoritesCount > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                            <span className={`absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium`}>
                               {favoritesCount > 99 ? '99+' : favoritesCount}
                             </span>
                           )}
                         </button>
-                        
-                        <button 
+
+                        <button
                           onClick={() => handleNavigation('/cart')}
-                          className="relative p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200"
+                          className={`relative p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-md transition-all duration-200 ${location.pathname === '/cart' ? 'text-red-500 bg-red-50' : ''
+                            }`}
                           aria-label={`Shopping cart ${cartItemsCount > 0 ? `(${cartItemsCount} items)` : ''}`}
                         >
                           <HiOutlineShoppingCart className="w-5 h-5" />
@@ -260,27 +245,30 @@ const Navbar = () => {
                         </button>
                       </>
                     )}
-                    
+
                     <div className="w-px h-6 bg-gray-200 mx-3"></div>
                   </>
                 )}
-                
+
                 {/* User Profile / Login Section */}
                 {isAuthenticated ? (
                   <div className="flex items-center space-x-3">
-                    <button 
+                    <button
                       onClick={() => handleNavigation(user?.role === 'CUSTOMER' ? '/profile' : '/restaurant/my-profile')}
-                      className="flex items-center space-x-2 px-4 py-2.5 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 font-medium"
+                      className={`flex items-center space-x-2 px-4 py-2.5 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-md transition-all duration-200 font-medium ${location.pathname === (user?.role === 'CUSTOMER' ? '/profile' : '/restaurant/my-profile')
+                          ? 'text-red-500 bg-red-50'
+                          : 'text-gray-700 hover:text-red-500 hover:bg-red-50'
+                        }`}
                     >
                       <HiOutlineUser className="w-4 h-4" />
                       <span className="max-w-24 truncate">
                         {user?.name || 'Profile'}
                       </span>
                     </button>
-                    
-                    <button 
+
+                    <button
                       onClick={handleLogout}
-                      className="flex items-center space-x-2 px-4 py-2.5 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 font-medium"
+                      className="flex items-center space-x-2 px-4 py-2.5 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-md transition-all duration-200 font-medium"
                       title="Logout"
                     >
                       <HiOutlineLogout className="w-4 h-4" />
@@ -288,9 +276,9 @@ const Navbar = () => {
                     </button>
                   </div>
                 ) : (
-                  <button 
+                  <button
                     onClick={() => handleNavigation('/select-login')}
-                    className="flex items-center space-x-2 px-6 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+                    className="flex items-center space-x-2 px-6 py-2.5 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
                   >
                     <HiOutlineUser className="w-4 h-4" />
                     <span>Login</span>
@@ -302,19 +290,17 @@ const Navbar = () => {
               <div className="flex lg:hidden">
                 <button
                   onClick={toggleMenu}
-                  className="p-2.5 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+                  className="p-2.5 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-md transition-all duration-200"
                   aria-label="Toggle mobile menu"
                 >
                   <div className="relative w-6 h-6">
-                    <HiOutlineMenuAlt3 
-                      className={`absolute inset-0 w-6 h-6 transition-all duration-300 ${
-                        isOpen ? 'opacity-0 rotate-180' : 'opacity-100 rotate-0'
-                      }`} 
+                    <HiOutlineMenuAlt3
+                      className={`absolute inset-0 w-6 h-6 transition-all duration-300 ${isOpen ? 'opacity-0 rotate-180' : 'opacity-100 rotate-0'
+                        }`}
                     />
-                    <HiX 
-                      className={`absolute inset-0 w-6 h-6 transition-all duration-300 ${
-                        isOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-180'
-                      }`} 
+                    <HiX
+                      className={`absolute inset-0 w-6 h-6 transition-all duration-300 ${isOpen ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-180'
+                        }`}
                     />
                   </div>
                 </button>
@@ -325,19 +311,17 @@ const Navbar = () => {
       </nav>
 
       {/* Mobile Menu Overlay */}
-      <div className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
-        isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
-      }`}>
-        <div 
+      <div className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+        }`}>
+        <div
           className="absolute inset-0 bg-black/50 backdrop-blur-sm"
           onClick={toggleMenu}
         ></div>
-        
+
         {/* Mobile Menu Panel */}
-        <div className={`absolute top-16 left-0 right-0 bg-white shadow-2xl transition-all duration-300 transform ${
-          isOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
-        }`}>
-          
+        <div className={`absolute top-16 left-0 right-0 bg-white shadow-2xl transition-all duration-300 transform ${isOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
+          }`}>
+
           {/* User Info - Mobile */}
           {isAuthenticated && (
             <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-red-50 to-orange-50">
@@ -358,11 +342,11 @@ const Navbar = () => {
               </div>
             </div>
           )}
-          
+
           {/* Location - Mobile */}
           <div className="p-6 border-b border-gray-100 bg-gray-50">
             <div className="relative location-dropdown">
-              <div 
+              <div
                 className="flex items-center space-x-3 text-gray-700 cursor-pointer"
                 onClick={() => setShowLocationDropdown(!showLocationDropdown)}
               >
@@ -375,10 +359,10 @@ const Navbar = () => {
                   </span>
                 </div>
               </div>
-              
+
               {/* Mobile Dropdown */}
               {showLocationDropdown && (
-                <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 w-full">
+                <div className="absolute top-full left-0 mt-2 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-50 w-full">
                   {locations.map(location => (
                     <button
                       key={location}
@@ -386,9 +370,8 @@ const Navbar = () => {
                         setSelectedLocation(location);
                         setShowLocationDropdown(false);
                       }}
-                      className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors duration-200 ${
-                        selectedLocation === location ? 'text-red-500 bg-red-50' : 'text-gray-700'
-                      }`}
+                      className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors duration-200 ${selectedLocation === location ? 'text-red-500 bg-red-50' : 'text-gray-700'
+                        }`}
                     >
                       {location}
                     </button>
@@ -404,13 +387,11 @@ const Navbar = () => {
               <button
                 key={link.name}
                 onClick={() => handleNavigation(link.href)}
-                className={`w-full text-left flex items-center px-6 py-4 hover:bg-red-50 hover:text-red-500 transition-all duration-200 transform border-b border-gray-50 ${
-                  location.pathname === link.href
+                className={`w-full text-left flex items-center px-6 py-4 hover:bg-red-50 hover:text-red-500 transition-all duration-200 transform border-b border-gray-50 ${location.pathname === link.href
                     ? 'bg-red-50 text-red-500 font-semibold'
                     : 'text-gray-700'
-                } ${
-                  isOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
-                }`}
+                  } ${isOpen ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'
+                  }`}
                 style={{ transitionDelay: `${index * 50}ms` }}
               >
                 <span className="font-medium text-base">{link.name}</span>
@@ -424,9 +405,9 @@ const Navbar = () => {
               <>
                 {user?.role === 'CUSTOMER' && (
                   <>
-                    <button 
+                    <button
                       onClick={() => handleNavigation('/favorites')}
-                      className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-xl hover:bg-white transition-all duration-200 font-medium"
+                      className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-md hover:bg-white transition-all duration-200 font-medium"
                     >
                       <div className="flex items-center space-x-3">
                         <HiOutlineHeart className="w-5 h-5 text-gray-600" />
@@ -439,9 +420,9 @@ const Navbar = () => {
                       )}
                     </button>
 
-                    <button 
+                    <button
                       onClick={() => handleNavigation('/cart')}
-                      className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-xl hover:bg-white transition-all duration-200 font-medium"
+                      className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-md hover:bg-white transition-all duration-200 font-medium"
                     >
                       <div className="flex items-center space-x-3">
                         <HiOutlineShoppingCart className="w-5 h-5 text-gray-600" />
@@ -456,18 +437,18 @@ const Navbar = () => {
                   </>
                 )}
 
-                <button 
+                <button
                   onClick={handleLogout}
-                  className="flex items-center justify-center w-full space-x-3 px-4 py-4 bg-gray-600 text-white rounded-xl hover:bg-gray-700 transition-all duration-200 font-medium shadow-md"
+                  className="flex items-center justify-center w-full space-x-3 px-4 py-4 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-all duration-200 font-medium shadow-md"
                 >
                   <HiOutlineLogout className="w-5 h-5" />
                   <span>Logout</span>
                 </button>
               </>
             ) : (
-              <button 
+              <button
                 onClick={() => handleNavigation('/select-login')}
-                className="flex items-center justify-center w-full space-x-3 px-4 py-4 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 font-medium shadow-md"
+                className="flex items-center justify-center w-full space-x-3 px-4 py-4 bg-red-500 text-white rounded-md hover:bg-red-600 transition-all duration-200 font-medium shadow-md"
               >
                 <HiOutlineUser className="w-5 h-5" />
                 <span>Login / Sign Up</span>

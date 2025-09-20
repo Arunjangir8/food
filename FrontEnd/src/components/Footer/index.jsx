@@ -42,9 +42,9 @@ const Footer = () => {
                             <input
                                 type="email"
                                 placeholder="Enter your email address"
-                                className="flex-1 px-6 py-4 rounded-lg text-gray-900 font-medium placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-white/30"
+                                className="flex-1 px-6 py-4 rounded-md text-gray-900 font-medium placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-white/30"
                             />
-                            <button className="bg-white hover:bg-gray-100 text-red-600 font-bold px-8 py-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2 transform hover:scale-105">
+                            <button className="bg-white hover:bg-gray-100 text-red-600 font-bold px-8 py-4 rounded-md transition-all duration-300 flex items-center justify-center space-x-2 transform hover:scale-105">
                                 <span>Subscribe</span>
                                 <HiChevronRight className="w-5 h-5" />
                             </button>
@@ -61,7 +61,7 @@ const Footer = () => {
                             {/* Company Info */}
                             <div className="lg:col-span-1">
                                 <div className="flex items-center space-x-2 mb-4">
-                                    <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-500 rounded-lg flex items-center justify-center">
+                                    <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-500 rounded-md flex items-center justify-center">
                                         <span className="text-white font-bold text-lg">F</span>
                                     </div>
                                     <h3 className="text-xl font-bold">FoodieZone</h3>
@@ -123,7 +123,7 @@ const Footer = () => {
                                 <div className="space-y-2">
                                     <a
                                         href="#"
-                                        className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-colors duration-200 group"
+                                        className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 p-2 rounded-md transition-colors duration-200 group"
                                     >
                                         <FaApple className="w-5 h-5 text-white" />
                                         <div>
@@ -134,7 +134,7 @@ const Footer = () => {
 
                                     <a
                                         href="#"
-                                        className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 p-2 rounded-lg transition-colors duration-200 group"
+                                        className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 p-2 rounded-md transition-colors duration-200 group"
                                     >
                                         <FaGooglePlay className="w-5 h-5 text-white" />
                                         <div>

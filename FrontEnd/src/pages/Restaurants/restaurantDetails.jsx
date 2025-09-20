@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { restaurantAPI, menuAPI } from '../../services/api.js';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { localStorageUtils } from '../../utils/localStorage.js';
 import toast from 'react-hot-toast';
 import { 
   HiOutlineArrowLeft,
@@ -18,158 +20,12 @@ import {
   HiTrash
 } from 'react-icons/hi';
 
-// Cart utility functions
-const cartUtils = {
-  getCart: () => {
-    try {
-      const cart = localStorage.getItem('foodCart');
-      return cart ? JSON.parse(cart) : [];
-    } catch (error) {
-      console.error('Error getting cart from localStorage:', error);
-      return [];
-    }
-  },
 
-  saveCart: (cart) => {
-    try {
-      localStorage.setItem('foodCart', JSON.stringify(cart));
-    } catch (error) {
-      console.error('Error saving cart to localStorage:', error);
-    }
-  },
-
-  addToCart: (item, customizations = {}) => {
-    const cart = cartUtils.getCart();
-    const customizationPrice = Object.values(customizations).flat().reduce((total, option) => {
-      return total + (option?.price || 0);
-    }, 0);
-
-    const cartItem = {
-      id: Date.now(),
-      itemId: item.id,
-      restaurantId: item.restaurantId,
-      restaurantName: item.restaurantName,
-      name: item.name,
-      price: item.price,
-      customizationPrice,
-      totalPrice: item.price + customizationPrice,
-      quantity: 1,
-      customizations,
-      image: item.image,
-      addedAt: new Date().toISOString()
-    };
-
-    const updatedCart = [...cart, cartItem];
-    cartUtils.saveCart(updatedCart);
-    return updatedCart;
-  },
-
-  updateQuantity: (cartItemId, change) => {
-    const cart = cartUtils.getCart();
-    const updatedCart = cart.map(item => 
-      item.id === cartItemId 
-        ? { ...item, quantity: Math.max(1, item.quantity + change) }
-        : item
-    );
-    cartUtils.saveCart(updatedCart);
-    return updatedCart;
-  },
-
-  removeFromCart: (cartItemId) => {
-    const cart = cartUtils.getCart();
-    const updatedCart = cart.filter(item => item.id !== cartItemId);
-    cartUtils.saveCart(updatedCart);
-    return updatedCart;
-  },
-
-  clearCart: () => {
-    cartUtils.saveCart([]);
-    return [];
-  }
-};
-
-// Favorites utility functions
-const favoritesUtils = {
-  getFavorites: () => {
-    try {
-      const favorites = localStorage.getItem('foodFavorites');
-      return favorites ? JSON.parse(favorites) : [];
-    } catch (error) {
-      console.error('Error getting favorites from localStorage:', error);
-      return [];
-    }
-  },
-
-  saveFavorites: (favorites) => {
-    try {
-      localStorage.setItem('foodFavorites', JSON.stringify(favorites));
-    } catch (error) {
-      console.error('Error saving favorites to localStorage:', error);
-    }
-  },
-
-  addToFavorites: (item) => {
-    const favorites = favoritesUtils.getFavorites();
-    
-    // Create favorite item without quantity - just essential details
-    const favoriteItem = {
-      id: item.id,
-      itemId: item.id,
-      restaurantId: item.restaurantId,
-      restaurantName: item.restaurantName,
-      name: item.name,
-      price: item.price,
-      description: item.description,
-      image: item.image,
-      category: item.category,
-      dietaryType: item.dietaryType,
-      popular: item.popular,
-      customizations: item.customizations,
-      addedAt: new Date().toISOString()
-    };
-
-    // Check if item already exists in favorites
-    const existingIndex = favorites.findIndex(fav => fav.id === item.id);
-    
-    if (existingIndex === -1) {
-      // Add to favorites
-      const updatedFavorites = [...favorites, favoriteItem];
-      favoritesUtils.saveFavorites(updatedFavorites);
-      return { favorites: updatedFavorites, added: true };
-    } else {
-      // Remove from favorites
-      const updatedFavorites = favorites.filter(fav => fav.id !== item.id);
-      favoritesUtils.saveFavorites(updatedFavorites);
-      return { favorites: updatedFavorites, added: false };
-    }
-  },
-
-  removeFromFavorites: (itemId) => {
-    const favorites = favoritesUtils.getFavorites();
-    const updatedFavorites = favorites.filter(fav => fav.id !== itemId);
-    favoritesUtils.saveFavorites(updatedFavorites);
-    return updatedFavorites;
-  },
-
-  clearFavorites: () => {
-    favoritesUtils.saveFavorites([]);
-    return [];
-  },
-
-  isFavorite: (itemId) => {
-    const favorites = favoritesUtils.getFavorites();
-    return favorites.some(fav => fav.id === itemId);
-  },
-
-  getFavoritesCount: () => {
-    const favorites = favoritesUtils.getFavorites();
-    return favorites.length;
-  }
-};
 
 const RestaurantDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [cart, setCart] = useState([]);
@@ -179,12 +35,29 @@ const RestaurantDetailsPage = () => {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load cart and favorites from localStorage on component mount
+  // Load cart and favorites from localStorage
   useEffect(() => {
-    const savedCart = cartUtils.getCart();
-    const savedFavorites = favoritesUtils.getFavorites();
-    setCart(savedCart);
-    setFavorites(savedFavorites);
+    const loadLocalData = () => {
+      const localCart = localStorageUtils.getCart();
+      const localFavorites = localStorageUtils.getFavorites();
+      
+      setCart(localCart);
+      setFavorites(localFavorites);
+    };
+    
+    loadLocalData();
+    
+    // Listen for storage updates
+    const handleCartUpdate = () => setCart(localStorageUtils.getCart());
+    const handleFavoritesUpdate = () => setFavorites(localStorageUtils.getFavorites());
+    
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
+    
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
+    };
   }, []);
 
   // Mock restaurant data for fallback
@@ -432,7 +305,7 @@ const RestaurantDetailsPage = () => {
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Restaurant not found</h2>
-          <button onClick={() => navigate('/restaurants')} className="bg-red-500 text-white px-6 py-3 rounded-xl">
+          <button onClick={() => navigate('/restaurants')} className="bg-red-500 text-white px-6 py-3 rounded-md">
             Back to Restaurants
           </button>
         </div>
@@ -440,38 +313,64 @@ const RestaurantDetailsPage = () => {
     );
   }
 
-  const addToCart = (item, customizations = {}) => {
-    const updatedCart = cartUtils.addToCart(item, customizations);
-    setCart(updatedCart);
-    setShowCustomization(null);
+  const addToCart = async (item, customizations = {}) => {
+    const cartItem = {
+      itemId: item.id,
+      restaurantId: item.restaurantId,
+      restaurantName: item.restaurantName,
+      name: item.name,
+      price: item.price,
+      customizations,
+      customizationPrice: Object.values(customizations).flat().reduce((total, option) => total + (option?.price || 0), 0),
+      totalPrice: item.price + Object.values(customizations).flat().reduce((total, option) => total + (option?.price || 0), 0),
+      image: item.image || '🍕',
+      quantity: 1
+    };
     
+    await localStorageUtils.addToCart(cartItem, !!user);
+    setShowCustomization(null);
     toast.success(`${item.name} added to cart!`);
   };
 
   const updateQuantity = (cartItemId, change) => {
-    const updatedCart = cartUtils.updateQuantity(cartItemId, change);
-    setCart(updatedCart);
+    const currentItem = cart.find(item => item.id === cartItemId);
+    const newQuantity = Math.max(1, currentItem.quantity + change);
+    
+    localStorageUtils.updateCartItem(cartItemId, { quantity: newQuantity });
   };
 
   const removeFromCart = (cartItemId) => {
-    const updatedCart = cartUtils.removeFromCart(cartItemId);
-    setCart(updatedCart);
+    localStorageUtils.removeFromCart(cartItemId);
   };
 
-  const toggleFavorite = (item) => {
-    const result = favoritesUtils.addToFavorites(item);
-    setFavorites(result.favorites);
+  const toggleFavorite = async (item) => {
+    const existingFavorite = favorites.find(fav => fav.itemId === item.id);
     
-    // Show feedback message
-    if (result.added) {
-      toast.success(`${item.name} added to favorites!`);
-    } else {
+    if (existingFavorite) {
+      await localStorageUtils.removeFromFavorites(item.id, !!user);
       toast.info(`${item.name} removed from favorites!`);
+    } else {
+      const favoriteItem = {
+        itemId: item.id,
+        restaurantId: item.restaurantId,
+        restaurantName: item.restaurantName,
+        name: item.name,
+        price: item.price,
+        description: item.description,
+        image: item.image,
+        category: item.category,
+        dietaryType: item.dietaryType,
+        popular: item.popular,
+        customizations: item.customizations
+      };
+      
+      await localStorageUtils.addToFavorites(favoriteItem, !!user);
+      toast.success(`${item.name} added to favorites!`);
     }
   };
 
   const isFavorite = (itemId) => {
-    return favoritesUtils.isFavorite(itemId);
+    return favorites.some(fav => fav.itemId === itemId);
   };
 
   const cartTotal = cart.reduce((total, item) => total + (item.totalPrice * item.quantity), 0);
@@ -523,7 +422,7 @@ const RestaurantDetailsPage = () => {
 
     return (
       <div className="fixed inset-0 w-[100vw] bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded-md max-w-md w-full max-h-[90vh] overflow-y-auto">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-gray-900">{item.name}</h3>
@@ -550,7 +449,7 @@ const RestaurantDetailsPage = () => {
                 
                 <div className="space-y-2">
                   {customization.options.map(option => (
-                    <label key={option.name} className="flex items-center justify-between p-3 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer">
+                    <label key={option.name} className="flex items-center justify-between p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">
                       <div className="flex items-center space-x-3">
                         <input
                           type={customization.type}
@@ -577,7 +476,7 @@ const RestaurantDetailsPage = () => {
               <button
                 onClick={() => onAdd(item, selectedCustomizations)}
                 disabled={!canAddToCart()}
-                className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 ${
+                className={`w-full py-3 rounded-md font-semibold transition-all duration-200 ${
                   canAddToCart()
                     ? 'bg-red-500 hover:bg-red-600 text-white'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -613,7 +512,7 @@ const RestaurantDetailsPage = () => {
               </button>
               
               <div className="flex-1">
-                <h1 className="text-2xl font-bold text-gray-900">{restaurant.name}</h1>
+                <h1 className="text-xl font-bold text-gray-900">{restaurant.name}</h1>
                 <div className="flex items-center space-x-4 mt-1">
                   <div className="flex items-center space-x-1">
                     <HiStar className="w-4 h-4 text-green-500 fill-current" />
@@ -637,7 +536,7 @@ const RestaurantDetailsPage = () => {
           {/* Left Side - Menu Items */}
           <div className="flex-1 px-4 sm:px-6 lg:px-8 py-6">
             {/* Restaurant Info */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+            <div className="bg-white rounded-md shadow-xl p-6 mb-6">
               <div className="flex items-center space-x-4">
                 <div className="text-6xl">{restaurant.image}</div>
                 <div className="flex-1">
@@ -659,7 +558,7 @@ const RestaurantDetailsPage = () => {
 
             {/* Favorites Summary */}
             {favoritesCount > 0 && (
-              <div className="bg-pink-50 border border-pink-200 rounded-2xl p-4 mb-6">
+              <div className="bg-pink-50 border border-pink-200 rounded-md p-4 mb-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <HiHeart className="w-5 h-5 text-pink-500" />
@@ -699,18 +598,18 @@ const RestaurantDetailsPage = () => {
             {/* Menu Items */}
             <div className="space-y-4">
               {filteredItems.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+                <div className="text-center py-12 bg-white rounded-md shadow-lg">
                   <div className="text-6xl mb-4">🍽️</div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No menu items available</h3>
                   <p className="text-gray-600">This restaurant hasn't added any menu items yet.</p>
                 </div>
               ) : (
                 filteredItems.map(item => (
-                <div key={item.id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <div key={item.id} className="bg-white rounded-md shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                   <div className="p-6">
                     <div className="flex items-start space-x-4">
                       <div className="relative">
-                        <div className="w-20 h-20 bg-gradient-to-br from-orange-200 to-red-200 rounded-xl flex items-center justify-center text-3xl">
+                        <div className="w-20 h-20 bg-gradient-to-br from-orange-200 to-red-200 rounded-md flex items-center justify-center text-3xl">
                           {item.image}
                         </div>
                         
@@ -757,7 +656,7 @@ const RestaurantDetailsPage = () => {
                             
                             <button
                               onClick={() => item.customizations.length > 0 ? setShowCustomization(item) : addToCart(item)}
-                              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl font-semibold transition-all duration-200 transform hover:-translate-y-0.5"
+                              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md font-semibold transition-all duration-200 transform hover:-translate-y-0.5"
                             >
                               Add
                             </button>
@@ -773,10 +672,9 @@ const RestaurantDetailsPage = () => {
           </div>
 
           {/* Right Side - Interactive Cart Preview */}
-          <div className="w-96 bg-white shadow-2xl p-6 overflow-y-auto max-h-screen sticky top-0">
+          <div className="w-96 bg-white h-[85vh] shadow-2xl p-6 overflow-y-auto max-h-screen sticky top-0">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center space-x-2">
-                <HiOutlineShoppingCart className="w-6 h-6" />
+              <h2 className="text-xl font-bold text-gray-900 flex items-center space-x-2">
                 <span>Your Cart</span>
               </h2>
               
@@ -801,7 +699,7 @@ const RestaurantDetailsPage = () => {
                 {/* Cart Items with Interactive Controls */}
                 <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
                   {cart.map(cartItem => (
-                    <div key={cartItem.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50">
+                    <div key={cartItem.id} className="border border-gray-200 rounded-md p-4 bg-gray-50">
                       <div className="flex items-start space-x-3">
                         <div className="text-2xl">{cartItem.image}</div>
                         
@@ -834,11 +732,11 @@ const RestaurantDetailsPage = () => {
                           
                           <div className="flex items-center justify-between">
                             {/* Quantity Controls */}
-                            <div className="flex items-center space-x-2 bg-white rounded-lg border">
+                            <div className="flex items-center space-x-2 bg-white rounded-md border">
                               <button
                                 onClick={() => updateQuantity(cartItem.id, -1)}
                                 disabled={cartItem.quantity <= 1}
-                                className="p-1 hover:bg-gray-100 rounded-l-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="p-1 hover:bg-gray-100 rounded-l-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <HiMinus className="w-4 h-4" />
                               </button>
@@ -849,7 +747,7 @@ const RestaurantDetailsPage = () => {
                               
                               <button
                                 onClick={() => updateQuantity(cartItem.id, 1)}
-                                className="p-1 hover:bg-gray-100 rounded-r-lg transition-colors duration-200"
+                                className="p-1 hover:bg-gray-100 rounded-r-m transition-colors duration-200"
                               >
                                 <HiPlus className="w-4 h-4" />
                               </button>
@@ -874,16 +772,16 @@ const RestaurantDetailsPage = () => {
 
                   <button
                     onClick={() => navigate('/cart')}
-                    className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-md font-bold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                   >
                     Proceed to Checkout
                   </button>
                   
                   {cart.length > 0 && (
                     <button
-                      onClick={() => {
-                        cartUtils.clearCart();
-                        setCart([]);
+                      onClick={async () => {
+                        await localStorageUtils.clearCart(!!user);
+                        toast.info('Cart cleared');
                       }}
                       className="w-full mt-2 py-2 text-red-500 hover:text-red-600 font-medium text-sm transition-colors duration-200"
                     >

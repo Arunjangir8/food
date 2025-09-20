@@ -77,6 +77,18 @@ export const userAPI = {
   addAddress: (data) => api.post('/users/addresses', data),
   updateAddress: (id, data) => api.put(`/users/addresses/${id}`, data),
   deleteAddress: (id) => api.delete(`/users/addresses/${id}`),
+  
+  // Cart API
+  getCart: () => api.get('/users/cart'),
+  addToCart: (data) => api.post('/users/cart', data),
+  updateCartItem: (id, data) => api.put(`/users/cart/${id}`, data),
+  removeFromCart: (id) => api.delete(`/users/cart/${id}`),
+  clearCart: () => api.delete('/users/cart'),
+  
+  // Favorites API
+  getFavorites: () => api.get('/users/favorites'),
+  addToFavorites: (data) => api.post('/users/favorites', data),
+  removeFromFavorites: (id) => api.delete(`/users/favorites/${id}`),
 };
 
 export default api;

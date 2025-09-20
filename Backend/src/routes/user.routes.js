@@ -8,7 +8,15 @@ const {
   changePassword,
   addAddress,
   updateAddress,
-  deleteAddress
+  deleteAddress,
+  getCart,
+  addToCart,
+  updateCartItem,
+  removeFromCart,
+  clearCart,
+  getFavorites,
+  addToFavorites,
+  removeFromFavorites
 } = require('../controllers/user.controller');
 
 const router = express.Router();
@@ -48,5 +56,26 @@ router.post('/addresses',
 
 router.put('/addresses/:id', updateAddress);
 router.delete('/addresses/:id', deleteAddress);
+
+// Cart routes
+router.get('/cart', getCart);
+router.post('/cart', [
+  body('menuItemId').notEmpty().withMessage('Menu item ID is required'),
+  body('quantity').optional().isInt({ min: 1 }).withMessage('Quantity must be at least 1')
+], addToCart);
+router.put('/cart/:id', [
+  body('quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1')
+], updateCartItem);
+router.delete('/cart/:id', removeFromCart);
+router.delete('/cart', clearCart);
+
+// Favorites routes
+router.get('/favorites', getFavorites);
+router.post('/favorites', [
+  body('type').isIn(['RESTAURANT', 'MENU_ITEM']).withMessage('Type must be RESTAURANT or MENU_ITEM'),
+  body('restaurantId').optional().notEmpty().withMessage('Restaurant ID required for restaurant favorites'),
+  body('menuItemId').optional().notEmpty().withMessage('Menu item ID required for menu item favorites')
+], addToFavorites);
+router.delete('/favorites/:id', removeFromFavorites);
 
 module.exports = router;

@@ -424,7 +424,7 @@ const ProfilePage = () => {
   const SidebarButton = ({ id, label, icon, isActive, onClick }) => (
     <button
       onClick={() => onClick(id)}
-      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 text-left ${
+      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-md font-medium transition-all duration-200 text-left ${
         isActive
           ? 'bg-red-500 text-white shadow-md'
           : 'text-gray-700 hover:bg-red-50 hover:text-red-600'
@@ -436,7 +436,7 @@ const ProfilePage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
+    <div className="min-h-screen pt-16 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -444,7 +444,7 @@ const ProfilePage = () => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate(-1)}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200"
+                className="p-2 hover:bg-gray-100 rounded-md transition-colors duration-200"
               >
                 <HiOutlineArrowLeft className="w-6 h-6 text-gray-700" />
               </button>
@@ -454,31 +454,13 @@ const ProfilePage = () => {
                 <p className="text-sm text-gray-500">Manage your account and preferences</p>
               </div>
             </div>
-
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => navigate('/my-orders/current')}
-                className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl transition-colors duration-200 border border-orange-200"
-              >
-                <HiOutlineMail className="w-4 h-4" />
-                <span className="font-medium">My Orders</span>
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-colors duration-200 border border-red-200"
-              >
-                <HiOutlineLogout className="w-4 h-4" />
-                <span className="font-medium">Logout</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Profile Header Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <div className="bg-white rounded-md shadow-sm border border-gray-100 p-6 mb-6">
           <div className="flex flex-col lg:flex-row items-start lg:items-center space-y-6 lg:space-y-0 lg:space-x-8">
             <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
               <div className="relative">
@@ -489,7 +471,7 @@ const ProfilePage = () => {
                     <HiOutlineUser className="w-12 h-12 sm:w-14 sm:h-14 text-white" />
                   )}
                 </div>
-                <label className="absolute -bottom-2 -right-2 bg-white p-2 rounded-xl shadow-md hover:shadow-lg cursor-pointer transition-all duration-200 border border-gray-200">
+                <label className="absolute -bottom-2 -right-2 bg-white p-2 rounded-md shadow-md hover:shadow-lg cursor-pointer transition-all duration-200 border border-gray-200">
                   <HiOutlinePhotograph className="w-4 h-4 text-gray-600" />
                   <input
                     type="file"
@@ -515,15 +497,15 @@ const ProfilePage = () => {
 
             <div className="flex-1 lg:flex lg:justify-end">
               <div className="grid grid-cols-3 gap-4 w-full lg:w-auto">
-                <div className="text-center p-3 bg-red-50 rounded-xl border border-red-100">
+                <div className="text-center p-3 bg-red-50 rounded-md border border-red-100">
                   <div className="text-xl font-bold text-red-600">{profile.totalOrders}</div>
                   <div className="text-xs text-red-500">Orders</div>
                 </div>
-                <div className="text-center p-3 bg-orange-50 rounded-xl border border-orange-100">
+                <div className="text-center p-3 bg-orange-50 rounded-md border border-orange-100">
                   <div className="text-xl font-bold text-orange-600">{profile.favoriteRestaurants}</div>
                   <div className="text-xs text-orange-500">Favorites</div>
                 </div>
-                <div className="text-center p-3 bg-yellow-50 rounded-xl border border-yellow-100">
+                <div className="text-center p-3 bg-yellow-50 rounded-md border border-yellow-100">
                   <div className="text-xl font-bold text-yellow-600">{profile.points}</div>
                   <div className="text-xs text-yellow-500">Points</div>
                 </div>
@@ -536,7 +518,7 @@ const ProfilePage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar Navigation */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sticky top-24">
+            <div className="bg-white rounded-md shadow-sm border border-gray-100 p-4 sticky top-24">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 px-2">Account</h3>
               <div className="space-y-2">
                 <SidebarButton
@@ -568,13 +550,13 @@ const ProfilePage = () => {
           <div className="lg:col-span-3">
             {/* Profile Tab Content */}
             {activeTab === 'profile' && (
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <div className="bg-white rounded-md shadow-sm border border-gray-100 p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-semibold text-gray-900">Personal Information</h3>
                   {!isEditing && (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors duration-200"
+                      className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200"
                     >
                       <HiOutlinePencil className="w-4 h-4" />
                       <span>Edit Profile</span>
@@ -591,7 +573,7 @@ const ProfilePage = () => {
                         value={isEditing ? editProfile.name : profile.name}
                         onChange={(e) => setEditProfile({...editProfile, name: e.target.value})}
                         disabled={!isEditing}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
                       />
                     </div>
 
@@ -602,7 +584,7 @@ const ProfilePage = () => {
                         value={isEditing ? editProfile.email : profile.email}
                         onChange={(e) => setEditProfile({...editProfile, email: e.target.value})}
                         disabled={!isEditing}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
                       />
                     </div>
 
@@ -613,7 +595,7 @@ const ProfilePage = () => {
                         value={isEditing ? editProfile.phone : profile.phone}
                         onChange={(e) => setEditProfile({...editProfile, phone: e.target.value})}
                         disabled={!isEditing}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
                       />
                     </div>
 
@@ -627,7 +609,7 @@ const ProfilePage = () => {
                           day: 'numeric' 
                         })}
                         disabled
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
                       />
                     </div>
                   </div>
@@ -637,7 +619,7 @@ const ProfilePage = () => {
                       <button
                         onClick={handleSaveProfile}
                         disabled={isSaving}
-                        className="flex items-center space-x-2 px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white rounded-xl font-medium transition-colors duration-200 disabled:cursor-not-allowed"
+                        className="flex items-center space-x-2 px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white rounded-md font-medium transition-colors duration-200 disabled:cursor-not-allowed"
                       >
                         {isSaving ? (
                           <>
@@ -653,7 +635,7 @@ const ProfilePage = () => {
                       </button>
                       <button
                         onClick={handleCancelEdit}
-                        className="flex items-center space-x-2 px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-colors duration-200"
+                        className="flex items-center space-x-2 px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md font-medium transition-colors duration-200"
                       >
                         <HiOutlineX className="w-4 h-4" />
                         <span>Cancel</span>
@@ -666,14 +648,14 @@ const ProfilePage = () => {
                 <div className="mt-8 pt-6 border-t border-gray-200">
                   <button
                     onClick={() => setShowChangePassword(!showChangePassword)}
-                    className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors duration-200"
+                    className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors duration-200"
                   >
                     <HiOutlineLockClosed className="w-5 h-5" />
                     <span>Change Password</span>
                   </button>
 
                   {showChangePassword && (
-                    <div className="mt-6 p-6 bg-gray-50 rounded-xl">
+                    <div className="mt-6 p-6 bg-gray-50 rounded-md">
                       <h4 className="text-lg font-medium text-gray-900 mb-4">Change Password</h4>
                       <div className="space-y-4">
                         <div className="relative">
@@ -682,7 +664,7 @@ const ProfilePage = () => {
                             placeholder="Current Password"
                             value={passwordData.currentPassword}
                             onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                           />
                           <button
                             onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
@@ -698,7 +680,7 @@ const ProfilePage = () => {
                             placeholder="New Password"
                             value={passwordData.newPassword}
                             onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                           />
                           <button
                             onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
@@ -714,7 +696,7 @@ const ProfilePage = () => {
                             placeholder="Confirm New Password"
                             value={passwordData.confirmPassword}
                             onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                           />
                           <button
                             onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
@@ -728,7 +710,7 @@ const ProfilePage = () => {
                           <button
                             onClick={handlePasswordChange}
                             disabled={isChangingPassword}
-                            className="px-6 py-3 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white rounded-xl font-medium transition-colors duration-200 disabled:cursor-not-allowed flex items-center space-x-2"
+                            className="px-6 py-3 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white rounded-md font-medium transition-colors duration-200 disabled:cursor-not-allowed flex items-center space-x-2"
                           >
                             {isChangingPassword ? (
                               <>
@@ -748,7 +730,7 @@ const ProfilePage = () => {
                                 confirmPassword: ''
                               });
                             }}
-                            className="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-colors duration-200"
+                            className="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md font-medium transition-colors duration-200"
                           >
                             Cancel
                           </button>
@@ -767,7 +749,7 @@ const ProfilePage = () => {
                   <h3 className="text-xl font-semibold text-gray-900">Delivery Addresses</h3>
                   <button
                     onClick={handleAddAddress}
-                    className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors duration-200"
+                    className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200"
                   >
                     <HiPlus className="w-4 h-4" />
                     <span>Add Address</span>
@@ -776,7 +758,7 @@ const ProfilePage = () => {
 
                 <div className="space-y-4">
                   {addresses.map((address) => (
-                    <div key={address.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow duration-200">
+                    <div key={address.id} className="border border-gray-200 rounded-md p-4 hover:shadow-md transition-shadow duration-200">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-3">
                           <div className="p-2 bg-red-100 rounded-lg">
@@ -800,21 +782,21 @@ const ProfilePage = () => {
                       <div className="flex items-center space-x-2 mt-4">
                         <button
                           onClick={() => handleEditAddress(address)}
-                          className="flex-1 px-3 py-2 text-sm border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200"
+                          className="flex-1 px-3 py-2 text-sm border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md transition-colors duration-200"
                         >
                           Edit
                         </button>
                         {!address.isDefault && (
                           <button
                             onClick={() => handleSetDefaultAddress(address.id)}
-                            className="flex-1 px-3 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200"
+                            className="flex-1 px-3 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors duration-200"
                           >
                             Set Default
                           </button>
                         )}
                         <button
                           onClick={() => handleDeleteAddress(address.id)}
-                          className="px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                          className="px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-md transition-colors duration-200"
                         >
                           <HiTrash className="w-4 h-4" />
                         </button>
@@ -839,7 +821,7 @@ const ProfilePage = () => {
                     </h4>
                     <div className="space-y-3">
                       {Object.entries(settings.notifications).map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-md">
                           <div>
                             <h5 className="font-medium text-gray-900 capitalize">
                               {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
@@ -873,7 +855,7 @@ const ProfilePage = () => {
                     </h4>
                     <div className="space-y-3">
                       {Object.entries(settings.privacy).map(([key, value]) => (
-                        <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-md">
                           <div>
                             <h5 className="font-medium text-gray-900 capitalize">
                               {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
@@ -905,7 +887,7 @@ const ProfilePage = () => {
                       Preferences
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 bg-gray-50 rounded-xl">
+                      <div className="p-4 bg-gray-50 rounded-md">
                         <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
                         <select
                           value={settings.preferences.language}
@@ -919,7 +901,7 @@ const ProfilePage = () => {
                         </select>
                       </div>
 
-                      <div className="p-4 bg-gray-50 rounded-xl">
+                      <div className="p-4 bg-gray-50 rounded-md">
                         <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
                         <select
                           value={settings.preferences.currency}
@@ -932,7 +914,7 @@ const ProfilePage = () => {
                         </select>
                       </div>
 
-                      <div className="p-4 bg-gray-50 rounded-xl">
+                      <div className="p-4 bg-gray-50 rounded-md">
                         <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
                         <select
                           value={settings.preferences.theme}
@@ -967,7 +949,7 @@ const ProfilePage = () => {
                 <select
                   value={addressForm.type}
                   onChange={(e) => setAddressForm({...addressForm, type: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 >
                   <option value="Home">Home</option>
                   <option value="Office">Office</option>
@@ -982,7 +964,7 @@ const ProfilePage = () => {
                   onChange={(e) => setAddressForm({...addressForm, address: e.target.value})}
                   placeholder="House/Flat/Office No., Street, Area"
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   required
                 />
               </div>
@@ -994,7 +976,7 @@ const ProfilePage = () => {
                     type="text"
                     value={addressForm.city}
                     onChange={(e) => setAddressForm({...addressForm, city: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     required
                   />
                 </div>
@@ -1005,7 +987,7 @@ const ProfilePage = () => {
                     type="text"
                     value={addressForm.pincode}
                     onChange={(e) => setAddressForm({...addressForm, pincode: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     required
                   />
                 </div>
@@ -1027,14 +1009,14 @@ const ProfilePage = () => {
               <div className="flex items-center space-x-3 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-semibold transition-colors duration-200"
+                  className="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 rounded-md font-semibold transition-colors duration-200"
                 >
                   {editingAddress ? 'Update Address' : 'Save Address'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowAddressModal(false)}
-                  className="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-colors duration-200"
+                  className="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md font-semibold transition-colors duration-200"
                 >
                   Cancel
                 </button>

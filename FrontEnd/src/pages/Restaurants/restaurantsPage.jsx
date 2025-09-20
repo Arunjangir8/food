@@ -142,12 +142,12 @@ const RestaurantsPage = () => {
                 {/* Search and Filters Section */}
                 <div className="mb-8 space-y-6">
                     {/* Search Bar */}
-                    <div className="bg-white rounded-2xl shadow-2xl p-2 w-full max-w-4xl mx-auto border border-gray-100">
+                    <div className="bg-white rounded-md shadow-2xl p-2 w-full max-w-4xl mx-auto border border-gray-100">
                         <div className="flex flex-col lg:flex-row gap-2">
                             {/* Location Selector */}
                             <div className="relative location-dropdown">
                                 <div 
-                                    className="w-full lg:w-48 flex items-center space-x-2 text-gray-700 hover:text-red-500 cursor-pointer transition-colors duration-200 px-4 py-4 rounded-xl bg-gray-50 hover:bg-white h-14"
+                                    className="w-full lg:w-48 flex items-center space-x-2 text-gray-700 hover:text-red-500 cursor-pointer transition-colors duration-200 px-4 py-4 rounded-md bg-gray-50 hover:bg-white h-14"
                                     onClick={() => setShowLocationDropdown(!showLocationDropdown)}
                                 >
                                     <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
@@ -162,7 +162,7 @@ const RestaurantsPage = () => {
                                 
                                 {/* Dropdown */}
                                 {showLocationDropdown && (
-                                    <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 w-full lg:w-48">
+                                    <div className="absolute top-full left-0 mt-2 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-50 w-full lg:w-48">
                                         {locations.map(location => (
                                             <button
                                                 key={location}
@@ -189,14 +189,14 @@ const RestaurantsPage = () => {
                                     placeholder="Search restaurants, cuisines, or dishes"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-4 text-gray-700 placeholder-gray-400 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all duration-200 h-14"
+                                    className="w-full pl-12 pr-4 py-4 text-gray-700 placeholder-gray-400 bg-gray-50 border-0 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all duration-200 h-14"
                                 />
                             </div>
 
                             {/* Advanced Filters Toggle */}
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className={`px-6 py-4 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 h-14 ${showFilters
+                                className={`px-6 py-4 rounded-md font-medium transition-all duration-200 flex items-center space-x-2 h-14 ${showFilters
                                     ? 'bg-red-500 text-white shadow-lg'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
@@ -210,7 +210,22 @@ const RestaurantsPage = () => {
                     {/* Advanced Filters Panel */}
                     <div className='flex justify-center w-full'>
                         {showFilters && (
-                            <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 animate-slideDown">
+                            <div className="bg-white rounded-md shadow-xl p-6 border border-gray-100 animate-slideDown">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-lg font-semibold text-gray-900">Advanced Filters</h3>
+                                    <button
+                                        onClick={() => {
+                                            setPriceRange([0, 1000]);
+                                            setMaxDistance(20);
+                                            setSortBy('rating');
+                                            setSelectedCuisine('All');
+                                            setSearchQuery('');
+                                        }}
+                                        className="px-4 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors duration-200"
+                                    >
+                                        Clear All Filters
+                                    </button>
+                                </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                                     {/* Price Range Filter */}
@@ -225,7 +240,7 @@ const RestaurantsPage = () => {
                                                 max="1000"
                                                 value={priceRange[0]}
                                                 onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
-                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                                                className="w-full h-2 bg-gray-200 rounded-md appearance-none cursor-pointer slider-thumb"
                                             />
                                             <input
                                                 type="range"
@@ -233,7 +248,7 @@ const RestaurantsPage = () => {
                                                 max="1000"
                                                 value={priceRange[1]}
                                                 onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                                                className="w-full h-2 bg-gray-200 rounded-md appearance-none cursor-pointer slider-thumb"
                                             />
                                             <div className="flex justify-between text-sm text-gray-500">
                                                 <span>₹0</span>
@@ -253,7 +268,7 @@ const RestaurantsPage = () => {
                                             max="20"
                                             value={maxDistance}
                                             onChange={(e) => setMaxDistance(parseInt(e.target.value))}
-                                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb"
+                                            className="w-full h-2 bg-gray-200 rounded-md appearance-none cursor-pointer slider-thumb"
                                         />
                                         <div className="flex justify-between text-sm text-gray-500 mt-1">
                                             <span>1 km</span>
@@ -267,7 +282,7 @@ const RestaurantsPage = () => {
                                         <select
                                             value={sortBy}
                                             onChange={(e) => setSortBy(e.target.value)}
-                                            className="w-full px-4 py-2 bg-gray-50 text-gray-700 rounded-xl border-0 focus:outline-none focus:ring-2 focus:ring-red-500"
+                                            className="w-full px-4 py-2 bg-gray-50 text-gray-700 rounded-md border-0 focus:outline-none focus:ring-2 focus:ring-red-500"
                                         >
                                             <option value="rating">Highest Rating</option>
                                             <option value="deliveryTime">Fastest Delivery</option>
@@ -301,7 +316,7 @@ const RestaurantsPage = () => {
 
                     {/* Active Filters Display */}
                     {(priceRange[0] > 0 || priceRange[1] < 1000 || maxDistance < 20) && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
                             <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <span className="text-sm font-semibold text-blue-800">Active Filters:</span>
                                 {(priceRange[0] > 0 || priceRange[1] < 1000) && (
@@ -337,7 +352,7 @@ const RestaurantsPage = () => {
                         {filteredRestaurants.map((restaurant, index) => (
                         <div
                             key={restaurant.id}
-                            className="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group overflow-hidden"
+                            className="bg-white rounded-md shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group overflow-hidden"
                             style={{
                                 animationDelay: `${index * 100}ms`,
                                 animation: 'fadeInUp 0.6s ease-out forwards'
@@ -345,7 +360,7 @@ const RestaurantsPage = () => {
                         >
                             {/* Restaurant Image Container */}
                             <div className="relative p-6 pb-4">
-                                <div className="relative bg-gradient-to-br from-orange-200 to-red-200 rounded-2xl h-48 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                                <div className="relative bg-gradient-to-br from-orange-200 to-red-200 rounded-md h-48 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
                                     <div className="text-6xl">{restaurant.image}</div>
 
 
@@ -420,7 +435,7 @@ const RestaurantsPage = () => {
 
                                     <div className="text-right">
                                         <div className="text-sm text-gray-500">Delivery fee</div>
-                                        <div className="font-semibold text-gray-900">${restaurant.deliveryFee}</div>
+                                        <div className="font-semibold text-gray-900">₹{restaurant.deliveryFee}</div>
                                     </div>
                                 </div>
 
@@ -428,7 +443,7 @@ const RestaurantsPage = () => {
                                 <button
                                     disabled={!restaurant.isActive}
                                     onClick={() => restaurant.isActive && handleOrderNow(restaurant.id)}
-                                    className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${restaurant.isActive
+                                    className={`w-full py-3 rounded-md font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${restaurant.isActive
                                         ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer'
                                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                         }`}
@@ -454,9 +469,10 @@ const RestaurantsPage = () => {
                                 setSelectedCuisine('All');
                                 setPriceRange([0, 1000]);
                                 setMaxDistance(20);
+                                setSortBy('rating');
                                 setShowFilters(false);
                             }}
-                            className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors duration-200"
+                            className="px-6 py-3 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200"
                         >
                             Reset Filters
                         </button>

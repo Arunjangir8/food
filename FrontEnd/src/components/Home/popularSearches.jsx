@@ -262,14 +262,14 @@ const PopularSearches = () => {
                 onClick={() => handleCategoryClick(category)}
               >
                 {/* Horizontal Card Layout */}
-                <div className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-row h-40 border border-gray-100">
+                <div className="relative bg-white rounded-md shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-row h-40 border border-gray-100">
                   
                   {/* Left Side - Image */}
                   <div className="relative w-40 h-full flex-shrink-0">
                     <img 
                       src={category.image} 
                       alt={category.name}
-                      className="w-full h-full object-cover rounded-l-xl"
+                      className="w-full h-full object-cover rounded-l-md"
                     />
                     
                     {/* Trending Badge */}
@@ -324,7 +324,7 @@ const PopularSearches = () => {
         <div className="text-center">
           <button 
             onClick={() => navigate('/home#cuisines')}
-            className="px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-2 inline-flex items-center"
+            className="px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-2 inline-flex items-center"
           >
             <span className="text-lg">Explore All Cuisines</span>
             <HiChevronRight className="w-6 h-6" />
