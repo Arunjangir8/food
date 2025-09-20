@@ -104,15 +104,29 @@ const Navbar = () => {
     navigate('/select-login');
   };
 
-  // Navigation links based on authentication status
-  const navLinks = [
-    { name: 'Home', href: '/' },
-    { name: 'Restaurants', href: '/restaurants' },
-    ...(isAuthenticated ? [
-      { name: 'My Orders', href: '/my-orders/current' },
-      { name: 'Profile', href: '/profile' }
-    ] : [])
-  ];
+  // Navigation links based on user role
+  const getNavLinks = () => {
+    if (!isAuthenticated) return [];
+    
+    if (user?.role === 'CUSTOMER') {
+      return [
+        { name: 'Home', href: '/' },
+        { name: 'Restaurants', href: '/restaurants' },
+        { name: 'My Orders', href: '/my-orders/current' },
+        { name: 'Profile', href: '/profile' }
+      ];
+    } else if (user?.role === 'RESTAURANT_OWNER') {
+      return [
+        { name: 'Dashboard', href: '/restaurant/dashboard' },
+        { name: 'Orders', href: '/restaurant/orders' },
+        { name: 'Menu', href: '/restaurant/menu' },
+        { name: 'Profile', href: '/restaurant/my-profile' }
+      ];
+    }
+    return [];
+  };
+  
+  const navLinks = getNavLinks();
 
   return (
     <div>
@@ -178,31 +192,35 @@ const Navbar = () => {
               <div className="hidden md:flex items-center space-x-3">
                 {isAuthenticated && (
                   <>
-                    <button 
-                      onClick={() => handleNavigation('/favorites')}
-                      className="p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 relative"
-                      aria-label={`Favorites ${favoritesCount > 0 ? `(${favoritesCount} items)` : ''}`}
-                    >
-                      <HiOutlineHeart className="w-5 h-5" />
-                      {favoritesCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                          {favoritesCount > 99 ? '99+' : favoritesCount}
-                        </span>
-                      )}
-                    </button>
-                    
-                    <button 
-                      onClick={() => handleNavigation('/cart')}
-                      className="relative p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200"
-                      aria-label={`Shopping cart ${cartItemsCount > 0 ? `(${cartItemsCount} items)` : ''}`}
-                    >
-                      <HiOutlineShoppingCart className="w-5 h-5" />
-                      {cartItemsCount > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
-                          {cartItemsCount > 99 ? '99+' : cartItemsCount}
-                        </span>
-                      )}
-                    </button>
+                    {user?.role === 'CUSTOMER' && (
+                      <>
+                        <button 
+                          onClick={() => handleNavigation('/favorites')}
+                          className="p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 relative"
+                          aria-label={`Favorites ${favoritesCount > 0 ? `(${favoritesCount} items)` : ''}`}
+                        >
+                          <HiOutlineHeart className="w-5 h-5" />
+                          {favoritesCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                              {favoritesCount > 99 ? '99+' : favoritesCount}
+                            </span>
+                          )}
+                        </button>
+                        
+                        <button 
+                          onClick={() => handleNavigation('/cart')}
+                          className="relative p-3 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200"
+                          aria-label={`Shopping cart ${cartItemsCount > 0 ? `(${cartItemsCount} items)` : ''}`}
+                        >
+                          <HiOutlineShoppingCart className="w-5 h-5" />
+                          {cartItemsCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                              {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                            </span>
+                          )}
+                        </button>
+                      </>
+                    )}
                     
                     <div className="w-px h-6 bg-gray-200 mx-3"></div>
                   </>
@@ -212,7 +230,7 @@ const Navbar = () => {
                 {isAuthenticated ? (
                   <div className="flex items-center space-x-3">
                     <button 
-                      onClick={() => handleNavigation('/profile')}
+                      onClick={() => handleNavigation(user?.role === 'CUSTOMER' ? '/profile' : '/restaurant/my-profile')}
                       className="flex items-center space-x-2 px-4 py-2.5 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 font-medium"
                     >
                       <HiOutlineUser className="w-4 h-4" />
@@ -340,35 +358,39 @@ const Navbar = () => {
           <div className="p-6 border-t border-gray-100 space-y-3 bg-gray-50">
             {isAuthenticated ? (
               <>
-                <button 
-                  onClick={() => handleNavigation('/favorites')}
-                  className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-xl hover:bg-white transition-all duration-200 font-medium"
-                >
-                  <div className="flex items-center space-x-3">
-                    <HiOutlineHeart className="w-5 h-5 text-gray-600" />
-                    <span>Favorites</span>
-                  </div>
-                  {favoritesCount > 0 && (
-                    <span className="bg-pink-500 text-white text-xs rounded-full px-2.5 py-1 font-semibold">
-                      {favoritesCount > 99 ? '99+' : favoritesCount}
-                    </span>
-                  )}
-                </button>
+                {user?.role === 'CUSTOMER' && (
+                  <>
+                    <button 
+                      onClick={() => handleNavigation('/favorites')}
+                      className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-xl hover:bg-white transition-all duration-200 font-medium"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <HiOutlineHeart className="w-5 h-5 text-gray-600" />
+                        <span>Favorites</span>
+                      </div>
+                      {favoritesCount > 0 && (
+                        <span className="bg-pink-500 text-white text-xs rounded-full px-2.5 py-1 font-semibold">
+                          {favoritesCount > 99 ? '99+' : favoritesCount}
+                        </span>
+                      )}
+                    </button>
 
-                <button 
-                  onClick={() => handleNavigation('/cart')}
-                  className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-xl hover:bg-white transition-all duration-200 font-medium"
-                >
-                  <div className="flex items-center space-x-3">
-                    <HiOutlineShoppingCart className="w-5 h-5 text-gray-600" />
-                    <span>Cart</span>
-                  </div>
-                  {cartItemsCount > 0 && (
-                    <span className="bg-red-500 text-white text-xs rounded-full px-2.5 py-1 font-semibold">
-                      {cartItemsCount > 99 ? '99+' : cartItemsCount}
-                    </span>
-                  )}
-                </button>
+                    <button 
+                      onClick={() => handleNavigation('/cart')}
+                      className="flex items-center justify-between w-full px-4 py-4 border border-gray-200 rounded-xl hover:bg-white transition-all duration-200 font-medium"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <HiOutlineShoppingCart className="w-5 h-5 text-gray-600" />
+                        <span>Cart</span>
+                      </div>
+                      {cartItemsCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs rounded-full px-2.5 py-1 font-semibold">
+                          {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                        </span>
+                      )}
+                    </button>
+                  </>
+                )}
 
                 <button 
                   onClick={handleLogout}

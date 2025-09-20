@@ -10,12 +10,14 @@ import FavoritesPage from './pages/Favorites/index.jsx'
 import Navbar from './components/Navbar/header.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import PublicRoute from './components/PublicRoute.jsx'
-
+import RoleProtectedRoute from './components/RoleProtectedRoute.jsx'
 
 import LoginRestaurantPage from './pages/Login/restaurantLogin.jsx'
 import RestaurantSignupPage from './pages/Login/restaurantSignup.jsx'
-import RestaurantProfilePage from './pages/Profile/ProfileRestaurant.jsx'
-
+import RestaurantProfilePage from './pages/Restaurant/ProfileRestaurant.jsx'
+import RestaurantDashboard from './pages/Restaurant/Dashboard.jsx'
+import RestaurantOrders from './pages/Restaurant/Orders.jsx'
+import RestaurantMenu from './pages/Restaurant/Menu.jsx'
 
 import { AuthProvider } from './context/AuthContext.jsx'
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
@@ -59,13 +61,12 @@ function App() {
               <LoginRestaurantPage />
             </PublicRoute>
           } />
-          {/* Protected routes - only accessible when logged in */}
+          {/* Customer routes - only accessible to customers */}
           <Route path="/" element={
-            <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
               <Layout />
-            </ProtectedRoute>
+            </RoleProtectedRoute>
           }>
-            {/* User ROutes */}
             <Route index element={<Dashboard />} /> 
             <Route path="home" element={<Dashboard />} />
             <Route path="restaurants" element={<RestaurantsPage />} />
@@ -74,16 +75,25 @@ function App() {
             <Route path="cart" element={<CartPage />} />
             <Route path="favorites" element={<FavoritesPage />} />
             <Route path="profile" element={<ProfilePage />} />
+          </Route>
 
-            {/* Restaurant Routes */}
-            <Route path="restaurant/my-profile" element={<RestaurantProfilePage />} />
+          {/* Restaurant routes - only accessible to restaurant owners */}
+          <Route path="/restaurant" element={
+            <RoleProtectedRoute allowedRoles={['RESTAURANT_OWNER']}>
+              <Layout />
+            </RoleProtectedRoute>
+          }>
+            <Route path="dashboard" element={<RestaurantDashboard />} />
+            <Route path="orders" element={<RestaurantOrders />} />
+            <Route path="menu" element={<RestaurantMenu />} />
+            <Route path="my-profile" element={<RestaurantProfilePage />} />
           </Route>
           
-          {/* Catch all route - redirect to user type selection */}
+          {/* Catch all route - redirect based on auth status */}
           <Route path="*" element={
-            <PublicRoute>
-              <UserTypeSelection />
-            </PublicRoute>
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
           } />
         </Routes>
       </AuthProvider>
