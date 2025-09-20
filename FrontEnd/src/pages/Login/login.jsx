@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { authAPI } from '../../services/api.js';
+import { HiOutlineArrowLeft } from 'react-icons/hi';
 import * as Components from "../../style/loginstyle.js";
 
 const Login = () => {
@@ -101,6 +102,15 @@ const Login = () => {
 
   return (
     <Components.AppWrapper>
+      {/* Back Button */}
+      <button
+        onClick={() => navigate('/select-login')}
+        className="fixed top-4 left-4 z-50 flex items-center space-x-2 px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-white transition-all duration-200 shadow-lg"
+      >
+        <HiOutlineArrowLeft className="w-5 h-5" />
+        <span>Back</span>
+      </button>
+      
       <Components.Container>
         {/* Sign Up */}
         <Components.SignUpContainer $isActive={isSignUpActive}>

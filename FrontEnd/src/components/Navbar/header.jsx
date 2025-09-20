@@ -101,7 +101,7 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     setIsOpen(false);
-    navigate('/login');
+    navigate('/select-login');
   };
 
   // Navigation links based on authentication status
@@ -232,7 +232,7 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <button 
-                    onClick={() => handleNavigation('/login')}
+                    onClick={() => handleNavigation('/select-login')}
                     className="flex items-center space-x-2 px-6 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
                   >
                     <HiOutlineUser className="w-4 h-4" />
@@ -380,7 +380,7 @@ const Navbar = () => {
               </>
             ) : (
               <button 
-                onClick={() => handleNavigation('/login')}
+                onClick={() => handleNavigation('/select-login')}
                 className="flex items-center justify-center w-full space-x-3 px-4 py-4 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all duration-200 font-medium shadow-md"
               >
                 <HiOutlineUser className="w-5 h-5" />

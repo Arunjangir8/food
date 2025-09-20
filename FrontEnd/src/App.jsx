@@ -1,4 +1,5 @@
 import Login from './pages/Login/login.jsx'
+import UserTypeSelection from './pages/Login/userTypeSelection.jsx'
 import { Dashboard } from './pages/Home/dashboard.jsx'
 import RestaurantsPage from './pages/Restaurants/restaurantsPage.jsx'
 import RestaurantDetailsPage from './pages/Restaurants/restaurantDetails.jsx'
@@ -37,6 +38,11 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* Public routes - only accessible when NOT logged in */}
+          <Route path="/select-login" element={
+            <PublicRoute>
+              <UserTypeSelection />
+            </PublicRoute>
+          } />
           <Route path="/login" element={
             <PublicRoute>
               <Login />
@@ -73,11 +79,11 @@ function App() {
             <Route path="restaurant/my-profile" element={<RestaurantProfilePage />} />
           </Route>
           
-          {/* Catch all route - redirect based on auth status */}
+          {/* Catch all route - redirect to user type selection */}
           <Route path="*" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
+            <PublicRoute>
+              <UserTypeSelection />
+            </PublicRoute>
           } />
         </Routes>
       </AuthProvider>

@@ -16,7 +16,8 @@ import {
   HiOutlineCheck,
   HiStar,
   HiOutlineTruck,
-  HiOutlineOfficeBuilding
+  HiOutlineOfficeBuilding,
+  HiOutlineArrowLeft
 } from 'react-icons/hi';
 
 const RestaurantRegisterPage = () => {
@@ -580,8 +581,17 @@ const RestaurantRegisterPage = () => {
 
   return (
     <div className="min-h-screen w-[100vw] bg-gradient-to-br flex">
+      {/* Back Button */}
+      <button
+        onClick={() => navigate('/select-login')}
+        className="fixed top-6 left-6 z-50 flex items-center space-x-2 px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-white transition-all duration-200 shadow-lg"
+      >
+        <HiOutlineArrowLeft className="w-5 h-5" />
+        <span>Back</span>
+      </button>
+      
       {/* Sidebar */}
-      <div className="w-80 bg-white shadow-xl">
+      <div className="w-80 bg-white shadow-xl lg:pt-20">
         <div className="p-6">
           <h1 className="text-2xl font-bold  mb-2 text-red-600">Restaurant Registration</h1>
           <p className="text-gray-600 text-sm">Complete all steps to register your restaurant</p>

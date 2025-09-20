@@ -4,7 +4,8 @@ import {
   HiOutlineLockClosed, 
   HiOutlineEye,
   HiOutlineEyeOff,
-  HiOutlineUser
+  HiOutlineUser,
+  HiOutlineArrowLeft
 } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -58,6 +59,15 @@ const LoginRestaurantPage = () => {
 
   return (
     <div className="min-h-screen w-[100vw] bg-gradient-to-br flex items-center justify-center p-4">
+      {/* Back Button */}
+      <button
+        onClick={() => navigate('/select-login')}
+        className="fixed top-4 left-4 z-50 flex items-center space-x-2 px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-white transition-all duration-200 shadow-lg"
+      >
+        <HiOutlineArrowLeft className="w-5 h-5" />
+        <span>Back</span>
+      </button>
+      
       <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden">
         
         {/* Header */}
