@@ -115,7 +115,7 @@ const profileUtils = {
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { user, logout } = useAuth(); // Use auth context
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -124,7 +124,7 @@ const ProfilePage = () => {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
 
-  // Profile state - sync with auth context
+  // Profile state
   const [profile, setProfile] = useState({
     name: user?.name || 'User',
     email: user?.email || '',
@@ -136,13 +136,8 @@ const ProfilePage = () => {
     points: 0
   });
 
-  // Editing state
   const [editProfile, setEditProfile] = useState(profile);
-  
-  // Addresses state
   const [addresses, setAddresses] = useState([]);
-
-  // Address form state
   const [addressForm, setAddressForm] = useState({
     type: 'Home',
     address: '',
@@ -151,7 +146,6 @@ const ProfilePage = () => {
     isDefault: false
   });
 
-  // Settings state
   const [settings, setSettings] = useState({
     notifications: {
       orderUpdates: true,
@@ -171,7 +165,6 @@ const ProfilePage = () => {
     }
   });
 
-  // Password change state
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -203,7 +196,6 @@ const ProfilePage = () => {
         setAddresses(profileRes.data.data.user.addresses || []);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
-        // Fallback to context user data
         if (user) {
           const userProfile = {
             name: user.name || 'User',
@@ -286,14 +278,12 @@ const ProfilePage = () => {
 
     try {
       if (editingAddress) {
-        // Update existing address
         const response = await userAPI.updateAddress(editingAddress.id, addressForm);
         const updatedAddresses = addresses.map(addr => 
           addr.id === editingAddress.id ? response.data.data.address : addr
         );
         setAddresses(updatedAddresses);
       } else {
-        // Add new address
         const response = await userAPI.addAddress(addressForm);
         setAddresses([...addresses, response.data.data.address]);
       }
@@ -306,7 +296,6 @@ const ProfilePage = () => {
     }
   };
 
-  // Save profile changes
   const handleSaveProfile = async () => {
     try {
       const formData = new FormData();
@@ -330,13 +319,11 @@ const ProfilePage = () => {
     }
   };
 
-  // Cancel profile editing
   const handleCancelEdit = () => {
     setEditProfile(profile);
     setIsEditing(false);
   };
 
-  // Handle settings change
   const handleSettingsChange = (section, key, value) => {
     const newSettings = {
       ...settings,
@@ -349,7 +336,6 @@ const ProfilePage = () => {
     profileUtils.saveSettings(newSettings);
   };
 
-  // Handle password change
   const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert('New passwords do not match!');
@@ -378,7 +364,6 @@ const ProfilePage = () => {
     }
   };
 
-  // Handle avatar upload
   const handleAvatarUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -387,7 +372,6 @@ const ProfilePage = () => {
         const newProfile = { ...editProfile, avatar: e.target.result, avatarFile: file };
         setEditProfile(newProfile);
         if (!isEditing) {
-          // Auto-save avatar when not in editing mode
           handleSaveAvatar(file);
         }
       };
@@ -395,7 +379,6 @@ const ProfilePage = () => {
     }
   };
 
-  // Save avatar separately
   const handleSaveAvatar = async (file) => {
     try {
       const formData = new FormData();
@@ -415,7 +398,6 @@ const ProfilePage = () => {
     }
   };
 
-  // Logout function using auth context
   const handleLogout = () => {
     const confirmed = window.confirm('Are you sure you want to logout?');
     if (confirmed) {
@@ -424,13 +406,13 @@ const ProfilePage = () => {
     }
   };
 
-  const TabButton = ({ id, label, icon, isActive, onClick }) => (
+  const SidebarButton = ({ id, label, icon, isActive, onClick }) => (
     <button
       onClick={() => onClick(id)}
-      className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 ${
+      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all duration-200 text-left ${
         isActive
-          ? 'bg-red-500 text-white shadow-lg'
-          : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md'
+          ? 'bg-red-500 text-white shadow-md'
+          : 'text-gray-700 hover:bg-red-50 hover:text-red-600'
       }`}
     >
       {icon}
@@ -439,470 +421,496 @@ const ProfilePage = () => {
   );
 
   return (
-    <div className="min-h-screen w-[100vw] bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
       {/* Header */}
-      <div className="bg-white shadow-lg sticky top-0 z-40">
-        <div className="px-4 sm:px-6 lg:px-8 py-4">
+      <div className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => navigate(-1)}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200"
               >
-                <HiOutlineArrowLeft className="w-6 h-6" />
+                <HiOutlineArrowLeft className="w-6 h-6 text-gray-700" />
               </button>
               
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">My Profile</h1>
-                <p className="text-sm text-gray-600">Manage your account and preferences</p>
+                <p className="text-sm text-gray-500">Manage your account and preferences</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
-              {/* Orders Button */}
               <button
                 onClick={() => navigate('/my-orders/current')}
-                className="flex items-center space-x-2 px-4 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-xl transition-colors duration-200"
+                className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 rounded-xl transition-colors duration-200 border border-orange-200"
               >
-                <HiOutlineMail className="w-5 h-5" />
-                <span>My Orders</span>
+                <HiOutlineMail className="w-4 h-4" />
+                <span className="font-medium">My Orders</span>
               </button>
 
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl transition-colors duration-200"
+                className="flex items-center space-x-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-colors duration-200 border border-red-200"
               >
-                <HiOutlineLogout className="w-5 h-5" />
-                <span>Logout</span>
+                <HiOutlineLogout className="w-4 h-4" />
+                <span className="font-medium">Logout</span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-6">
-        {/* Profile Header */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
-          <div className="flex flex-col sm:flex-row items-center space-y-6 sm:space-y-0 sm:space-x-8">
-            {/* Avatar */}
-            <div className="relative">
-              <div className="w-32 h-32 bg-gradient-to-br from-red-400 to-orange-400 rounded-full flex items-center justify-center overflow-hidden">
-                {profile.avatar ? (
-                  <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <HiOutlineUser className="w-16 h-16 text-white" />
-                )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Profile Header Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center space-y-6 lg:space-y-0 lg:space-x-8">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
+              <div className="relative">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-red-400 to-orange-400 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg">
+                  {profile.avatar ? (
+                    <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <HiOutlineUser className="w-12 h-12 sm:w-14 sm:h-14 text-white" />
+                  )}
+                </div>
+                <label className="absolute -bottom-2 -right-2 bg-white p-2 rounded-xl shadow-md hover:shadow-lg cursor-pointer transition-all duration-200 border border-gray-200">
+                  <HiOutlinePhotograph className="w-4 h-4 text-gray-600" />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                  />
+                </label>
               </div>
-              <label className="absolute bottom-2 right-2 bg-white p-2 rounded-full shadow-lg hover:shadow-xl cursor-pointer transition-all duration-200">
-                <HiOutlinePhotograph className="w-5 h-5 text-gray-600" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
-                />
-              </label>
+
+              <div className="text-center sm:text-left">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{profile.name}</h2>
+                <p className="text-gray-600 mb-3">{profile.email}</p>
+                <div className="flex flex-wrap justify-center sm:justify-start gap-3 text-sm text-gray-500">
+                  <span className="bg-gray-100 px-3 py-1 rounded-full">Member since {new Date(profile.dateJoined).toLocaleDateString()}</span>
+                  <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full">{profile.points} points</span>
+                </div>
+              </div>
             </div>
 
-            {/* Profile Info */}
-            <div className="flex-1 text-center sm:text-left">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">{profile.name}</h2>
-              <p className="text-gray-600 mb-4">{profile.email}</p>
-              <div className="flex flex-wrap justify-center sm:justify-start gap-4 text-sm text-gray-500">
-                <span>Member since {new Date(profile.dateJoined).toLocaleDateString()}</span>
-                <span>•</span>
-                <span>{profile.points} points</span>
+            <div className="flex-1 lg:flex lg:justify-end">
+              <div className="grid grid-cols-3 gap-4 w-full lg:w-auto">
+                <div className="text-center p-3 bg-red-50 rounded-xl border border-red-100">
+                  <div className="text-xl font-bold text-red-600">{profile.totalOrders}</div>
+                  <div className="text-xs text-red-500">Orders</div>
+                </div>
+                <div className="text-center p-3 bg-orange-50 rounded-xl border border-orange-100">
+                  <div className="text-xl font-bold text-orange-600">{profile.favoriteRestaurants}</div>
+                  <div className="text-xs text-orange-500">Favorites</div>
+                </div>
+                <div className="text-center p-3 bg-yellow-50 rounded-xl border border-yellow-100">
+                  <div className="text-xl font-bold text-yellow-600">{profile.points}</div>
+                  <div className="text-xs text-yellow-500">Points</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs - Removed Orders tab */}
-        <div className="flex flex-wrap gap-3 mb-8">
-          <TabButton
-            id="profile"
-            label="Profile"
-            icon={<HiOutlineUser className="w-5 h-5" />}
-            isActive={activeTab === 'profile'}
-            onClick={setActiveTab}
-          />
-          <TabButton
-            id="addresses"
-            label="Addresses"
-            icon={<HiOutlineLocationMarker className="w-5 h-5" />}
-            isActive={activeTab === 'addresses'}
-            onClick={setActiveTab}
-          />
-          <TabButton
-            id="settings"
-            label="Settings"
-            icon={<HiOutlineCog className="w-5 h-5" />}
-            isActive={activeTab === 'settings'}
-            onClick={setActiveTab}
-          />
-        </div>
-
-        {/* Tab Content - Profile Tab */}
-        {activeTab === 'profile' && (
-          <div className="bg-white rounded-3xl shadow-xl p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Personal Information</h3>
-              {!isEditing && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors duration-200"
-                >
-                  <HiOutlinePencil className="w-4 h-4" />
-                  <span>Edit Profile</span>
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-                <input
-                  type="text"
-                  value={isEditing ? editProfile.name : profile.name}
-                  onChange={(e) => setEditProfile({...editProfile, name: e.target.value})}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
+        {/* Main Layout with Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar Navigation */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sticky top-24">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 px-2">Account</h3>
+              <div className="space-y-2">
+                <SidebarButton
+                  id="profile"
+                  label="Profile"
+                  icon={<HiOutlineUser className="w-5 h-5" />}
+                  isActive={activeTab === 'profile'}
+                  onClick={setActiveTab}
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                <input
-                  type="email"
-                  value={isEditing ? editProfile.email : profile.email}
-                  onChange={(e) => setEditProfile({...editProfile, email: e.target.value})}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
+                <SidebarButton
+                  id="addresses"
+                  label="Addresses"
+                  icon={<HiOutlineLocationMarker className="w-5 h-5" />}
+                  isActive={activeTab === 'addresses'}
+                  onClick={setActiveTab}
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                <input
-                  type="tel"
-                  value={isEditing ? editProfile.phone : profile.phone}
-                  onChange={(e) => setEditProfile({...editProfile, phone: e.target.value})}
-                  disabled={!isEditing}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Member Since</label>
-                <input
-                  type="text"
-                  value={new Date(profile.dateJoined).toLocaleDateString()}
-                  disabled
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
+                <SidebarButton
+                  id="settings"
+                  label="Settings"
+                  icon={<HiOutlineCog className="w-5 h-5" />}
+                  isActive={activeTab === 'settings'}
+                  onClick={setActiveTab}
                 />
               </div>
             </div>
+          </div>
 
-            {/* Action buttons for editing */}
-            {isEditing && (
-              <div className="flex items-center space-x-3 mt-8">
-                <button
-                  onClick={handleSaveProfile}
-                  className="flex items-center space-x-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-semibold transition-colors duration-200"
-                >
-                  <HiOutlineCheck className="w-5 h-5" />
-                  <span>Save Changes</span>
-                </button>
-                <button
-                  onClick={handleCancelEdit}
-                  className="flex items-center space-x-2 px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-colors duration-200"
-                >
-                  <HiOutlineX className="w-5 h-5" />
-                  <span>Cancel</span>
-                </button>
+          {/* Content Area */}
+          <div className="lg:col-span-3">
+            {/* Profile Tab Content */}
+            {activeTab === 'profile' && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900">Personal Information</h3>
+                  {!isEditing && (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors duration-200"
+                    >
+                      <HiOutlinePencil className="w-4 h-4" />
+                      <span>Edit Profile</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                      <input
+                        type="text"
+                        value={isEditing ? editProfile.name : profile.name}
+                        onChange={(e) => setEditProfile({...editProfile, name: e.target.value})}
+                        disabled={!isEditing}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                      <input
+                        type="email"
+                        value={isEditing ? editProfile.email : profile.email}
+                        onChange={(e) => setEditProfile({...editProfile, email: e.target.value})}
+                        disabled={!isEditing}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                      <input
+                        type="tel"
+                        value={isEditing ? editProfile.phone : profile.phone}
+                        onChange={(e) => setEditProfile({...editProfile, phone: e.target.value})}
+                        disabled={!isEditing}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:text-gray-500 transition-colors duration-200"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Member Since</label>
+                      <input
+                        type="text"
+                        value={new Date(profile.dateJoined).toLocaleDateString()}
+                        disabled
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
+                      />
+                    </div>
+                  </div>
+
+                  {isEditing && (
+                    <div className="flex items-center space-x-3 pt-4">
+                      <button
+                        onClick={handleSaveProfile}
+                        className="flex items-center space-x-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors duration-200"
+                      >
+                        <HiOutlineCheck className="w-4 h-4" />
+                        <span>Save Changes</span>
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="flex items-center space-x-2 px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-colors duration-200"
+                      >
+                        <HiOutlineX className="w-4 h-4" />
+                        <span>Cancel</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Change Password Section */}
+                <div className="mt-8 pt-6 border-t border-gray-200">
+                  <button
+                    onClick={() => setShowChangePassword(!showChangePassword)}
+                    className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors duration-200"
+                  >
+                    <HiOutlineLockClosed className="w-5 h-5" />
+                    <span>Change Password</span>
+                  </button>
+
+                  {showChangePassword && (
+                    <div className="mt-6 p-6 bg-gray-50 rounded-xl">
+                      <h4 className="text-lg font-medium text-gray-900 mb-4">Change Password</h4>
+                      <div className="space-y-4">
+                        <div className="relative">
+                          <input
+                            type={showPasswords.current ? 'text' : 'password'}
+                            placeholder="Current Password"
+                            value={passwordData.currentPassword}
+                            onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                          />
+                          <button
+                            onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
+                            className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                          >
+                            {showPasswords.current ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
+                          </button>
+                        </div>
+
+                        <div className="relative">
+                          <input
+                            type={showPasswords.new ? 'text' : 'password'}
+                            placeholder="New Password"
+                            value={passwordData.newPassword}
+                            onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                          />
+                          <button
+                            onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
+                            className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                          >
+                            {showPasswords.new ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
+                          </button>
+                        </div>
+
+                        <div className="relative">
+                          <input
+                            type={showPasswords.confirm ? 'text' : 'password'}
+                            placeholder="Confirm New Password"
+                            value={passwordData.confirmPassword}
+                            onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                          />
+                          <button
+                            onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
+                            className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                          >
+                            {showPasswords.confirm ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
+                          </button>
+                        </div>
+
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={handlePasswordChange}
+                            className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors duration-200"
+                          >
+                            Update Password
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowChangePassword(false);
+                              setPasswordData({
+                                currentPassword: '',
+                                newPassword: '',
+                                confirmPassword: ''
+                              });
+                            }}
+                            className="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-medium transition-colors duration-200"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* Change Password Button */}
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <button
-                onClick={() => setShowChangePassword(!showChangePassword)}
-                className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors duration-200"
-              >
-                <HiOutlineLockClosed className="w-5 h-5" />
-                <span>Change Password</span>
-              </button>
-
-              {/* Change Password Form */}
-              {showChangePassword && (
-                <div className="mt-6 p-6 bg-gray-50 rounded-2xl">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h4>
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <input
-                        type={showPasswords.current ? 'text' : 'password'}
-                        placeholder="Current Password"
-                        value={passwordData.currentPassword}
-                        onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
-                        className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                      />
-                      <button
-                        onClick={() => setShowPasswords({...showPasswords, current: !showPasswords.current})}
-                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPasswords.current ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
-                      </button>
-                    </div>
-
-                    <div className="relative">
-                      <input
-                        type={showPasswords.new ? 'text' : 'password'}
-                        placeholder="New Password"
-                        value={passwordData.newPassword}
-                        onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
-                        className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                      />
-                      <button
-                        onClick={() => setShowPasswords({...showPasswords, new: !showPasswords.new})}
-                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPasswords.new ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
-                      </button>
-                    </div>
-
-                    <div className="relative">
-                      <input
-                        type={showPasswords.confirm ? 'text' : 'password'}
-                        placeholder="Confirm New Password"
-                        value={passwordData.confirmPassword}
-                        onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
-                        className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                      />
-                      <button
-                        onClick={() => setShowPasswords({...showPasswords, confirm: !showPasswords.confirm})}
-                        className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
-                      >
-                        {showPasswords.confirm ? <HiOutlineEyeOff className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
-                      </button>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={handlePasswordChange}
-                        className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-colors duration-200"
-                      >
-                        Update Password
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowChangePassword(false);
-                          setPasswordData({
-                            currentPassword: '',
-                            newPassword: '',
-                            confirmPassword: ''
-                          });
-                        }}
-                        className="px-6 py-3 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-xl font-semibold transition-colors duration-200"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
+            {/* Addresses Tab Content */}
+            {activeTab === 'addresses' && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-semibold text-gray-900">Delivery Addresses</h3>
+                  <button
+                    onClick={handleAddAddress}
+                    className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors duration-200"
+                  >
+                    <HiPlus className="w-4 h-4" />
+                    <span>Add Address</span>
+                  </button>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* Addresses Tab */}
-        {activeTab === 'addresses' && (
-          <div className="bg-white rounded-3xl shadow-xl p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Delivery Addresses</h3>
-              <button
-                onClick={handleAddAddress}
-                className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors duration-200"
-              >
-                <HiPlus className="w-4 h-4" />
-                <span>Add Address</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {addresses.map((address) => (
-                <div key={address.id} className="border border-gray-200 rounded-2xl p-6 hover:shadow-lg transition-shadow duration-200">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3">
-                      <div className="p-2 bg-red-100 rounded-lg">
-                        <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <h4 className="font-semibold text-gray-900">{address.type}</h4>
-                          {address.isDefault && (
-                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">
-                              Default
-                            </span>
-                          )}
+                <div className="space-y-4">
+                  {addresses.map((address) => (
+                    <div key={address.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow duration-200">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start space-x-3">
+                          <div className="p-2 bg-red-100 rounded-lg">
+                            <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h4 className="font-medium text-gray-900">{address.type}</h4>
+                              {address.isDefault && (
+                                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                  Default
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-gray-600 text-sm mb-1">{address.address}</p>
+                            <p className="text-gray-500 text-sm">{address.city} - {address.pincode}</p>
+                          </div>
                         </div>
-                        <p className="text-gray-600 text-sm mb-1">{address.address}</p>
-                        <p className="text-gray-500 text-sm">{address.city} - {address.pincode}</p>
                       </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2 mt-4">
-                    <button
-                      onClick={() => handleEditAddress(address)}
-                      className="flex-1 px-3 py-2 text-sm border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200"
-                    >
-                      Edit
-                    </button>
-                    {!address.isDefault && (
-                      <button
-                        onClick={() => handleSetDefaultAddress(address.id)}
-                        className="flex-1 px-3 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200"
-                      >
-                        Set Default
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleDeleteAddress(address.id)}
-                      className="px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                    >
-                      <HiTrash className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Settings Tab */}
-        {activeTab === 'settings' && (
-          <div className="bg-white rounded-3xl shadow-xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">Settings</h3>
-            
-            <div className="space-y-8">
-              {/* Notifications Settings */}
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <HiOutlineBell className="w-5 h-5 mr-2 text-red-500" />
-                  Notifications
-                </h4>
-                <div className="space-y-4">
-                  {Object.entries(settings.notifications).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div>
-                        <h5 className="font-medium text-gray-900 capitalize">
-                          {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                        </h5>
-                        <p className="text-sm text-gray-600">
-                          {key === 'orderUpdates' && 'Get notified about order status changes'}
-                          {key === 'promotions' && 'Receive promotional offers and discounts'}
-                          {key === 'newRestaurants' && 'Get notified when new restaurants join'}
-                          {key === 'weeklyDigest' && 'Weekly summary of your orders and activity'}
-                        </p>
+                      
+                      <div className="flex items-center space-x-2 mt-4">
+                        <button
+                          onClick={() => handleEditAddress(address)}
+                          className="flex-1 px-3 py-2 text-sm border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-lg transition-colors duration-200"
+                        >
+                          Edit
+                        </button>
+                        {!address.isDefault && (
+                          <button
+                            onClick={() => handleSetDefaultAddress(address.id)}
+                            className="flex-1 px-3 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200"
+                          >
+                            Set Default
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleDeleteAddress(address.id)}
+                          className="px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                        >
+                          <HiTrash className="w-4 h-4" />
+                        </button>
                       </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={value}
-                          onChange={(e) => handleSettingsChange('notifications', key, e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
-                      </label>
                     </div>
                   ))}
                 </div>
               </div>
+            )}
 
-              {/* Privacy Settings */}
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <HiOutlineLockClosed className="w-5 h-5 mr-2 text-red-500" />
-                  Privacy
-                </h4>
-                <div className="space-y-4">
-                  {Object.entries(settings.privacy).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div>
-                        <h5 className="font-medium text-gray-900 capitalize">
-                          {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                        </h5>
-                        <p className="text-sm text-gray-600">
-                          {key === 'profileVisibility' && 'Control who can see your profile information'}
-                          {key === 'locationSharing' && 'Share location for better delivery experience'}
-                          {key === 'activityTracking' && 'Allow tracking for personalized recommendations'}
-                        </p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={value}
-                          onChange={(e) => handleSettingsChange('privacy', key, e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
-                      </label>
+            {/* Settings Tab Content */}
+            {activeTab === 'settings' && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 className="text-xl font-semibold text-gray-900 mb-6">Settings</h3>
+                
+                <div className="space-y-6">
+                  {/* Notifications Settings */}
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                      <HiOutlineBell className="w-5 h-5 mr-2 text-red-500" />
+                      Notifications
+                    </h4>
+                    <div className="space-y-3">
+                      {Object.entries(settings.notifications).map(([key, value]) => (
+                        <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                          <div>
+                            <h5 className="font-medium text-gray-900 capitalize">
+                              {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                            </h5>
+                            <p className="text-sm text-gray-600">
+                              {key === 'orderUpdates' && 'Get notified about order status changes'}
+                              {key === 'promotions' && 'Receive promotional offers and discounts'}
+                              {key === 'newRestaurants' && 'Get notified when new restaurants join'}
+                              {key === 'weeklyDigest' && 'Weekly summary of your orders and activity'}
+                            </p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={value}
+                              onChange={(e) => handleSettingsChange('notifications', key, e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                          </label>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Privacy Settings */}
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                      <HiOutlineLockClosed className="w-5 h-5 mr-2 text-red-500" />
+                      Privacy
+                    </h4>
+                    <div className="space-y-3">
+                      {Object.entries(settings.privacy).map(([key, value]) => (
+                        <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                          <div>
+                            <h5 className="font-medium text-gray-900 capitalize">
+                              {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                            </h5>
+                            <p className="text-sm text-gray-600">
+                              {key === 'profileVisibility' && 'Control who can see your profile information'}
+                              {key === 'locationSharing' && 'Share location for better delivery experience'}
+                              {key === 'activityTracking' && 'Allow tracking for personalized recommendations'}
+                            </p>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={value}
+                              onChange={(e) => handleSettingsChange('privacy', key, e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Preferences */}
+                  <div>
+                    <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                      <HiOutlineCog className="w-5 h-5 mr-2 text-red-500" />
+                      Preferences
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-gray-50 rounded-xl">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                        <select
+                          value={settings.preferences.language}
+                          onChange={(e) => handleSettingsChange('preferences', 'language', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        >
+                          <option value="en">English</option>
+                          <option value="hi">हिन्दी</option>
+                          <option value="ta">தமிழ்</option>
+                          <option value="te">తెలుగు</option>
+                        </select>
+                      </div>
+
+                      <div className="p-4 bg-gray-50 rounded-xl">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+                        <select
+                          value={settings.preferences.currency}
+                          onChange={(e) => handleSettingsChange('preferences', 'currency', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        >
+                          <option value="INR">₹ Indian Rupee</option>
+                          <option value="USD">$ US Dollar</option>
+                          <option value="EUR">€ Euro</option>
+                        </select>
+                      </div>
+
+                      <div className="p-4 bg-gray-50 rounded-xl">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
+                        <select
+                          value={settings.preferences.theme}
+                          onChange={(e) => handleSettingsChange('preferences', 'theme', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        >
+                          <option value="light">Light</option>
+                          <option value="dark">Dark</option>
+                          <option value="system">System</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {/* Preferences */}
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <HiOutlineCog className="w-5 h-5 mr-2 text-red-500" />
-                  Preferences
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div className="p-4 bg-gray-50 rounded-xl">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Language</label>
-                    <select
-                      value={settings.preferences.language}
-                      onChange={(e) => handleSettingsChange('preferences', 'language', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    >
-                      <option value="en">English</option>
-                      <option value="hi">हिन्दी</option>
-                      <option value="ta">தமிழ்</option>
-                      <option value="te">తెలుగు</option>
-                    </select>
-                  </div>
-
-                  <div className="p-4 bg-gray-50 rounded-xl">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Currency</label>
-                    <select
-                      value={settings.preferences.currency}
-                      onChange={(e) => handleSettingsChange('preferences', 'currency', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    >
-                      <option value="INR">₹ Indian Rupee</option>
-                      <option value="USD">$ US Dollar</option>
-                      <option value="EUR">€ Euro</option>
-                    </select>
-                  </div>
-
-                  <div className="p-4 bg-gray-50 rounded-xl">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Theme</label>
-                    <select
-                      value={settings.preferences.theme}
-                      onChange={(e) => handleSettingsChange('preferences', 'theme', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    >
-                      <option value="light">Light</option>
-                      <option value="dark">Dark</option>
-                      <option value="system">System</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Add Address Modal */}
