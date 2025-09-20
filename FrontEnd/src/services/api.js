@@ -67,7 +67,12 @@ export const orderAPI = {
 // User API
 export const userAPI = {
   getProfile: () => api.get('/users/profile'),
-  updateProfile: (data) => api.put('/users/profile', data),
+  updateProfile: (data) => {
+    const config = data instanceof FormData 
+      ? { headers: { 'Content-Type': 'multipart/form-data' } }
+      : {};
+    return api.put('/users/profile', data, config);
+  },
   changePassword: (data) => api.put('/users/change-password', data),
   addAddress: (data) => api.post('/users/addresses', data),
   updateAddress: (id, data) => api.put(`/users/addresses/${id}`, data),

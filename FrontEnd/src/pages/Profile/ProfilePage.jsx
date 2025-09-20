@@ -309,9 +309,19 @@ const ProfilePage = () => {
   // Save profile changes
   const handleSaveProfile = async () => {
     try {
-      await userAPI.updateProfile(editProfile);
-      setProfile(editProfile);
-      profileUtils.saveProfile(editProfile);
+      const formData = new FormData();
+      formData.append('name', editProfile.name);
+      formData.append('phone', editProfile.phone || '');
+      
+      if (editProfile.avatarFile) {
+        formData.append('avatar', editProfile.avatarFile);
+      }
+      
+      const response = await userAPI.updateProfile(formData);
+      const updatedUser = response.data.data.user;
+      setProfile(updatedUser);
+      setEditProfile(updatedUser);
+      profileUtils.saveProfile(updatedUser);
       setIsEditing(false);
       alert('Profile updated successfully!');
     } catch (error) {
@@ -374,14 +384,34 @@ const ProfilePage = () => {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const newProfile = { ...editProfile, avatar: e.target.result };
+        const newProfile = { ...editProfile, avatar: e.target.result, avatarFile: file };
         setEditProfile(newProfile);
         if (!isEditing) {
-          setProfile(newProfile);
-          profileUtils.saveProfile(newProfile);
+          // Auto-save avatar when not in editing mode
+          handleSaveAvatar(file);
         }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Save avatar separately
+  const handleSaveAvatar = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      formData.append('name', profile.name);
+      formData.append('phone', profile.phone || '');
+      
+      const response = await userAPI.updateProfile(formData);
+      const updatedUser = response.data.data.user;
+      setProfile(updatedUser);
+      setEditProfile(updatedUser);
+      profileUtils.saveProfile(updatedUser);
+      alert('Avatar updated successfully!');
+    } catch (error) {
+      console.error('Failed to update avatar:', error);
+      alert('Failed to update avatar. Please try again.');
     }
   };
 
