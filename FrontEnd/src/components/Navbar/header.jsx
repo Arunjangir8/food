@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext.jsx'; // Import useAuth
+import { useAuth } from '../../context/AuthContext.jsx';
+import { useLocation as useLocationContext } from '../../context/LocationContext.jsx';
 import { 
   HiOutlineMenuAlt3, 
   HiX, 
@@ -15,11 +16,13 @@ import {
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout, isAuthenticated } = useAuth(); // Use auth context
+  const { user, logout, isAuthenticated } = useAuth();
+  const { selectedLocation, setSelectedLocation, locations } = useLocationContext();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [cartItemsCount, setCartItemsCount] = useState(0);
   const [favoritesCount, setFavoritesCount] = useState(0);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
   // Handle scroll effect
   useEffect(() => {
@@ -40,6 +43,17 @@ const Navbar = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Close location dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showLocationDropdown && !event.target.closest('.location-dropdown')) {
+        setShowLocationDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showLocationDropdown]);
 
   // Load and listen to localStorage changes for cart and favorites
   useEffect(() => {
@@ -155,15 +169,40 @@ const Navbar = () => {
 
             {/* Desktop Center Section - Location */}
             <div className="hidden md:flex items-center justify-center">
-              <div className="flex items-center space-x-2 text-gray-700 hover:text-red-500 cursor-pointer transition-colors duration-200 px-6 py-3 rounded-lg hover:bg-red-50">
-                <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
-                <div className="flex flex-col">
-                  <span className="text-xs text-gray-500 font-medium">Deliver to</span>
-                  <span className="text-sm font-semibold flex items-center">
-                    Current Location
-                    <HiChevronDown className="w-4 h-4 ml-1" />
-                  </span>
+              <div className="relative location-dropdown">
+                <div 
+                  className="flex items-center space-x-2 text-gray-700 hover:text-red-500 cursor-pointer transition-colors duration-200 px-6 py-3 rounded-lg hover:bg-red-50"
+                  onClick={() => setShowLocationDropdown(!showLocationDropdown)}
+                >
+                  <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
+                  <div className="flex flex-col">
+                    <span className="text-xs text-gray-500 font-medium">Deliver to</span>
+                    <span className="text-sm font-semibold flex items-center">
+                      {selectedLocation}
+                      <HiChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${showLocationDropdown ? 'rotate-180' : ''}`} />
+                    </span>
+                  </div>
                 </div>
+                
+                {/* Dropdown */}
+                {showLocationDropdown && (
+                  <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 min-w-[200px]">
+                    {locations.map(location => (
+                      <button
+                        key={location}
+                        onClick={() => {
+                          setSelectedLocation(location);
+                          setShowLocationDropdown(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors duration-200 ${
+                          selectedLocation === location ? 'text-red-500 bg-red-50' : 'text-gray-700'
+                        }`}
+                      >
+                        {location}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -322,15 +361,40 @@ const Navbar = () => {
           
           {/* Location - Mobile */}
           <div className="p-6 border-b border-gray-100 bg-gray-50">
-            <div className="flex items-center space-x-3 text-gray-700">
-              <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
-              <div>
-                <span className="text-xs text-gray-500 block">Deliver to</span>
-                <span className="text-sm font-semibold text-red-500 flex items-center">
-                  Current Location
-                  <HiChevronDown className="w-4 h-4 ml-1" />
-                </span>
+            <div className="relative location-dropdown">
+              <div 
+                className="flex items-center space-x-3 text-gray-700 cursor-pointer"
+                onClick={() => setShowLocationDropdown(!showLocationDropdown)}
+              >
+                <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
+                <div>
+                  <span className="text-xs text-gray-500 block">Deliver to</span>
+                  <span className="text-sm font-semibold text-red-500 flex items-center">
+                    {selectedLocation}
+                    <HiChevronDown className={`w-4 h-4 ml-1 transition-transform duration-200 ${showLocationDropdown ? 'rotate-180' : ''}`} />
+                  </span>
+                </div>
               </div>
+              
+              {/* Mobile Dropdown */}
+              {showLocationDropdown && (
+                <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 w-full">
+                  {locations.map(location => (
+                    <button
+                      key={location}
+                      onClick={() => {
+                        setSelectedLocation(location);
+                        setShowLocationDropdown(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors duration-200 ${
+                        selectedLocation === location ? 'text-red-500 bg-red-50' : 'text-gray-700'
+                      }`}
+                    >
+                      {location}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { 
   HiOutlineArrowLeft,
   HiHeart,
@@ -142,8 +143,7 @@ const FavoritesPage = () => {
     setCart(updatedCart);
     setShowCustomization(null);
     
-    // Show success notification
-    alert(`${item.name} added to cart!`);
+    toast.success(`${item.name} added to cart!`);
   };
 
   const removeFromFavorites = (itemId) => {
@@ -174,7 +174,7 @@ const FavoritesPage = () => {
       
       const updatedCart = cartUtils.getCart();
       setCart(updatedCart);
-      alert(`${count} items added to cart!`);
+      toast.success(`${count} items added to cart!`);
     }
   };
 

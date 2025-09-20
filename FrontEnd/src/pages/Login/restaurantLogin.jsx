@@ -10,6 +10,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { authAPI } from '../../services/api.js';
+import toast from 'react-hot-toast';
 
 const LoginRestaurantPage = () => {
   const [formData, setFormData] = useState({
@@ -51,7 +52,9 @@ const LoginRestaurantPage = () => {
         navigate('/restaurant/my-profile');
       }
     } catch (error) {
-      setErrors({ general: error.response?.data?.message || 'Login failed' });
+      const errorMessage = error.response?.data?.message || 'Login failed';
+      setErrors({ general: errorMessage });
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

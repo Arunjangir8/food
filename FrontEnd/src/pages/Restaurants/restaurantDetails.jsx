@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { restaurantAPI, menuAPI } from '../../services/api.js';
+import toast from 'react-hot-toast';
 import { 
   HiOutlineArrowLeft,
   HiStar,
@@ -388,6 +389,8 @@ const RestaurantDetailsPage = () => {
       } catch (error) {
         console.error('Failed to fetch data:', error);
         console.error('Error details:', error.response?.data || error.message);
+        const errorMessage = error.response?.data?.message || 'Failed to load restaurant data';
+        toast.error(errorMessage);
         // Fallback to mock data
         setRestaurant({
           ...mockRestaurant,
@@ -442,8 +445,7 @@ const RestaurantDetailsPage = () => {
     setCart(updatedCart);
     setShowCustomization(null);
     
-    // Show success notification (you can replace this with a toast notification)
-    alert(`${item.name} added to cart!`);
+    toast.success(`${item.name} added to cart!`);
   };
 
   const updateQuantity = (cartItemId, change) => {
@@ -462,9 +464,9 @@ const RestaurantDetailsPage = () => {
     
     // Show feedback message
     if (result.added) {
-      alert(`${item.name} added to favorites!`);
+      toast.success(`${item.name} added to favorites!`);
     } else {
-      alert(`${item.name} removed from favorites!`);
+      toast.info(`${item.name} removed from favorites!`);
     }
   };
 

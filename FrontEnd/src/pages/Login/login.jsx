@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { authAPI } from '../../services/api.js';
 import { HiOutlineArrowLeft } from 'react-icons/hi';
 import * as Components from "../../style/loginstyle.js";
+import toast from 'react-hot-toast';
 
 const Login = () => {
   const [signIn, setSignIn] = useState(true);
@@ -68,7 +69,9 @@ const Login = () => {
         navigate(from, { replace: true });
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -90,7 +93,9 @@ const Login = () => {
         navigate('/', { replace: true });
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

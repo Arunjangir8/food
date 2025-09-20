@@ -19,6 +19,7 @@ import {
   HiOutlineUpload,
   HiOutlineMenu
 } from 'react-icons/hi';
+import toast from 'react-hot-toast';
 
 const RestaurantProfilePage = () => {
   const [activeSection, setActiveSection] = useState('basic_info');
@@ -161,8 +162,11 @@ const RestaurantProfilePage = () => {
       setRestaurantData({ ...formData, updatedAt: new Date().toISOString() });
       setIsEditing(false);
       console.log('Restaurant updated:', formData);
+      toast.success('Restaurant profile updated successfully!');
     } catch (error) {
       console.error('Update failed:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to update restaurant profile';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

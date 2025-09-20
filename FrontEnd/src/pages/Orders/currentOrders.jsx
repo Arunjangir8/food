@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { orderAPI } from '../../services/api.js';
+import toast from 'react-hot-toast';
 import {
     HiOutlineArrowLeft,
     HiOutlineShoppingCart,
@@ -323,14 +324,15 @@ const OrdersPage = () => {
             const updatedCart = cartUtils.addToCart(cartItems);
 
             if (updatedCart.length > 0) {
-                alert(`${order.items.length} item${order.items.length > 1 ? 's' : ''} added to cart from ${order.restaurant.name}!`);
+                toast.success(`${order.items.length} item${order.items.length > 1 ? 's' : ''} added to cart from ${order.restaurant.name}!`);
                 navigate('/cart');
             } else {
                 throw new Error('Failed to add items to cart');
             }
         } catch (error) {
             console.error('Error reordering:', error);
-            alert('Failed to reorder. Please try again.');
+            const errorMessage = error.response?.data?.message || 'Failed to reorder. Please try again.';
+            toast.error(errorMessage);
         }
     };
 

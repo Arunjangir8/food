@@ -9,15 +9,18 @@ import {
     HiOutlineHeart,
     HiHeart,
     HiOutlineFilter,
-    HiOutlineAdjustments
+    HiOutlineAdjustments,
+    HiChevronDown
 } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from '../../context/LocationContext.jsx';
 import Footer from '../../components/Footer';
 
 const RestaurantsPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedLocation, setSelectedLocation] = useState('Delhi');
+    const { selectedLocation, setSelectedLocation, locations } = useLocation();
     const [selectedCuisine, setSelectedCuisine] = useState('All');
+    const [showLocationDropdown, setShowLocationDropdown] = useState(false);
     // const [favorites, setFavorites] = useState(new Set());
     const [sortBy, setSortBy] = useState('rating');
 
@@ -33,6 +36,17 @@ const RestaurantsPage = () => {
     const [restaurants, setRestaurants] = useState([]);
     const [loading, setLoading] = useState(true);
     
+    // Close location dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (showLocationDropdown && !event.target.closest('.location-dropdown')) {
+                setShowLocationDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showLocationDropdown]);
+
     // Load restaurants from API
     useEffect(() => {
         const fetchRestaurants = async () => {
@@ -62,7 +76,6 @@ const RestaurantsPage = () => {
     }, [selectedLocation, selectedCuisine, searchQuery]);
 
     const cuisines = ['All', 'Italian', 'American', 'Japanese', 'Mexican', 'Indian', 'Continental'];
-    const locations = ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata'];
 
     // const toggleFavorite = (id) => {
     //     const newFavorites = new Set(favorites);
@@ -132,17 +145,40 @@ const RestaurantsPage = () => {
                     <div className="bg-white rounded-2xl shadow-2xl p-2 w-full max-w-4xl mx-auto border border-gray-100">
                         <div className="flex flex-col lg:flex-row gap-2">
                             {/* Location Selector */}
-                            <div className="relative">
-                                <HiOutlineLocationMarker className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                <select
-                                    value={selectedLocation}
-                                    onChange={(e) => setSelectedLocation(e.target.value)}
-                                    className="w-full lg:w-48 pl-12 pr-8 py-4 text-gray-700 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all duration-200 appearance-none"
+                            <div className="relative location-dropdown">
+                                <div 
+                                    className="w-full lg:w-48 flex items-center space-x-2 text-gray-700 hover:text-red-500 cursor-pointer transition-colors duration-200 px-4 py-4 rounded-xl bg-gray-50 hover:bg-white h-14"
+                                    onClick={() => setShowLocationDropdown(!showLocationDropdown)}
                                 >
-                                    {locations.map(location => (
-                                        <option key={location} value={location}>{location}</option>
-                                    ))}
-                                </select>
+                                    <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
+                                    <div className="flex flex-col flex-1">
+                                        <span className="text-xs text-gray-500 font-medium">Deliver to</span>
+                                        <span className="text-sm font-semibold flex items-center justify-between">
+                                            {selectedLocation}
+                                            <HiChevronDown className={`w-4 h-4 transition-transform duration-200 ${showLocationDropdown ? 'rotate-180' : ''}`} />
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                {/* Dropdown */}
+                                {showLocationDropdown && (
+                                    <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 w-full lg:w-48">
+                                        {locations.map(location => (
+                                            <button
+                                                key={location}
+                                                onClick={() => {
+                                                    setSelectedLocation(location);
+                                                    setShowLocationDropdown(false);
+                                                }}
+                                                className={`w-full text-left px-4 py-2 hover:bg-red-50 transition-colors duration-200 ${
+                                                    selectedLocation === location ? 'text-red-500 bg-red-50' : 'text-gray-700'
+                                                }`}
+                                            >
+                                                {location}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Search Input */}
@@ -153,14 +189,14 @@ const RestaurantsPage = () => {
                                     placeholder="Search restaurants, cuisines, or dishes"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-4 text-gray-700 placeholder-gray-400 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all duration-200"
+                                    className="w-full pl-12 pr-4 py-4 text-gray-700 placeholder-gray-400 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 focus:bg-white transition-all duration-200 h-14"
                                 />
                             </div>
 
                             {/* Advanced Filters Toggle */}
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className={`px-6 py-4 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${showFilters
+                                className={`px-6 py-4 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 h-14 ${showFilters
                                     ? 'bg-red-500 text-white shadow-lg'
                                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                     }`}
@@ -170,7 +206,6 @@ const RestaurantsPage = () => {
                             </button>
                         </div>
                     </div>
-
 
                     {/* Advanced Filters Panel */}
                     <div className='flex justify-center w-full'>

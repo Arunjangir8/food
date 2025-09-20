@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { userAPI } from '../../services/api.js';
+import toast from 'react-hot-toast';
 import {
   HiOutlineArrowLeft,
   HiOutlineUser,
@@ -119,6 +120,8 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   // Modal states
   const [showAddressModal, setShowAddressModal] = useState(false);
@@ -186,6 +189,7 @@ const ProfilePage = () => {
         
         const userProfile = {
           ...profileRes.data.data.user,
+          dateJoined: profileRes.data.data.user.createdAt,
           totalOrders: 0,
           favoriteRestaurants: 0,
           points: 0
@@ -250,10 +254,11 @@ const ProfilePage = () => {
         await userAPI.deleteAddress(addressId);
         const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
         setAddresses(updatedAddresses);
-        alert('Address deleted successfully!');
+        toast.success('Address deleted successfully!');
       } catch (error) {
         console.error('Failed to delete address:', error);
-        alert('Failed to delete address. Please try again.');
+        const errorMessage = error.response?.data?.message || 'Failed to delete address. Please try again.';
+        toast.error(errorMessage);
       }
     }
   };
@@ -265,14 +270,14 @@ const ProfilePage = () => {
     }));
     setAddresses(updatedAddresses);
     profileUtils.saveAddresses(updatedAddresses);
-    alert('Default address updated successfully!');
+    toast.success('Default address updated successfully!');
   };
 
   const handleSaveAddress = async (e) => {
     e.preventDefault();
     
     if (!addressForm.address.trim() || !addressForm.pincode.trim()) {
-      alert('Please fill in all required fields!');
+      toast.error('Please fill in all required fields!');
       return;
     }
 
@@ -289,15 +294,17 @@ const ProfilePage = () => {
       }
       
       setShowAddressModal(false);
-      alert(`Address ${editingAddress ? 'updated' : 'added'} successfully!`);
+      toast.success(`Address ${editingAddress ? 'updated' : 'added'} successfully!`);
     } catch (error) {
       console.error('Failed to save address:', error);
-      alert('Failed to save address. Please try again.');
+      const errorMessage = error.response?.data?.message || 'Failed to save address. Please try again.';
+      toast.error(errorMessage);
     }
   };
 
   const handleSaveProfile = async () => {
     try {
+      setIsSaving(true);
       const formData = new FormData();
       formData.append('name', editProfile.name);
       formData.append('phone', editProfile.phone || '');
@@ -312,10 +319,13 @@ const ProfilePage = () => {
       setEditProfile(updatedUser);
       profileUtils.saveProfile(updatedUser);
       setIsEditing(false);
-      alert('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
     } catch (error) {
       console.error('Failed to update profile:', error);
-      alert('Failed to update profile. Please try again.');
+      const errorMessage = error.response?.data?.message || 'Failed to update profile. Please try again.';
+      toast.error(errorMessage);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -338,20 +348,21 @@ const ProfilePage = () => {
 
   const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('New passwords do not match!');
+      toast.error('New passwords do not match!');
       return;
     }
     if (passwordData.newPassword.length < 6) {
-      alert('Password must be at least 6 characters long!');
+      toast.error('Password must be at least 6 characters long!');
       return;
     }
     
     try {
+      setIsChangingPassword(true);
       await userAPI.changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
       });
-      alert('Password changed successfully!');
+      toast.success('Password changed successfully!');
       setShowChangePassword(false);
       setPasswordData({
         currentPassword: '',
@@ -360,7 +371,10 @@ const ProfilePage = () => {
       });
     } catch (error) {
       console.error('Failed to change password:', error);
-      alert(error.response?.data?.message || 'Failed to change password');
+      const errorMessage = error.response?.data?.message || 'Failed to change password';
+      toast.error(errorMessage);
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -391,10 +405,11 @@ const ProfilePage = () => {
       setProfile(updatedUser);
       setEditProfile(updatedUser);
       profileUtils.saveProfile(updatedUser);
-      alert('Avatar updated successfully!');
+      toast.success('Avatar updated successfully!');
     } catch (error) {
       console.error('Failed to update avatar:', error);
-      alert('Failed to update avatar. Please try again.');
+      const errorMessage = error.response?.data?.message || 'Failed to update avatar. Please try again.';
+      toast.error(errorMessage);
     }
   };
 
@@ -489,7 +504,10 @@ const ProfilePage = () => {
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{profile.name}</h2>
                 <p className="text-gray-600 mb-3">{profile.email}</p>
                 <div className="flex flex-wrap justify-center sm:justify-start gap-3 text-sm text-gray-500">
-                  <span className="bg-gray-100 px-3 py-1 rounded-full">Member since {new Date(profile.dateJoined).toLocaleDateString()}</span>
+                  <span className="bg-gray-100 px-3 py-1 rounded-full">Member since {new Date(profile.dateJoined).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short' 
+                  })}</span>
                   <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full">{profile.points} points</span>
                 </div>
               </div>
@@ -603,7 +621,11 @@ const ProfilePage = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">Member Since</label>
                       <input
                         type="text"
-                        value={new Date(profile.dateJoined).toLocaleDateString()}
+                        value={new Date(profile.dateJoined).toLocaleDateString('en-US', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
                         disabled
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
                       />
@@ -614,10 +636,20 @@ const ProfilePage = () => {
                     <div className="flex items-center space-x-3 pt-4">
                       <button
                         onClick={handleSaveProfile}
-                        className="flex items-center space-x-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors duration-200"
+                        disabled={isSaving}
+                        className="flex items-center space-x-2 px-6 py-3 bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white rounded-xl font-medium transition-colors duration-200 disabled:cursor-not-allowed"
                       >
-                        <HiOutlineCheck className="w-4 h-4" />
-                        <span>Save Changes</span>
+                        {isSaving ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Saving...</span>
+                          </>
+                        ) : (
+                          <>
+                            <HiOutlineCheck className="w-4 h-4" />
+                            <span>Save Changes</span>
+                          </>
+                        )}
                       </button>
                       <button
                         onClick={handleCancelEdit}
@@ -695,9 +727,17 @@ const ProfilePage = () => {
                         <div className="flex items-center space-x-3">
                           <button
                             onClick={handlePasswordChange}
-                            className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-colors duration-200"
+                            disabled={isChangingPassword}
+                            className="px-6 py-3 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white rounded-xl font-medium transition-colors duration-200 disabled:cursor-not-allowed flex items-center space-x-2"
                           >
-                            Update Password
+                            {isChangingPassword ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                <span>Updating...</span>
+                              </>
+                            ) : (
+                              <span>Update Password</span>
+                            )}
                           </button>
                           <button
                             onClick={() => {

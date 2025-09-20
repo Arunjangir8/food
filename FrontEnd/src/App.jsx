@@ -20,7 +20,9 @@ import RestaurantOrders from './pages/Restaurant/Orders.jsx'
 import RestaurantMenu from './pages/Restaurant/Menu.jsx'
 
 import { AuthProvider } from './context/AuthContext.jsx'
+import { LocationProvider } from './context/LocationContext.jsx'
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 
 // Layout component for pages with Navbar
 const Layout = () => {
@@ -38,6 +40,8 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <LocationProvider>
+          <Toaster position="bottom-right" />
         <Routes>
           {/* Public routes - only accessible when NOT logged in */}
           <Route path="/select-login" element={
@@ -96,6 +100,7 @@ function App() {
             </ProtectedRoute>
           } />
         </Routes>
+        </LocationProvider>
       </AuthProvider>
     </BrowserRouter>
   )

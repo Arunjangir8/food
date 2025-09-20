@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { authAPI } from '../../services/api.js';
+import toast from 'react-hot-toast';
 import { 
   HiOutlineMail, 
   HiOutlineLockClosed, 
@@ -197,7 +198,9 @@ const RestaurantRegisterPage = () => {
       }
     } catch (error) {
       console.error('Registration failed:', error);
-      setErrors({ general: error.response?.data?.message || 'Registration failed' });
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      setErrors({ general: errorMessage });
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

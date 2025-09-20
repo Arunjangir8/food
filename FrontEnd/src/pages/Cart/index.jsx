@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { orderAPI, userAPI } from '../../services/api.js';
 import { useAuth } from '../../context/AuthContext.jsx';
+import toast from 'react-hot-toast';
 import { 
   HiOutlineArrowLeft,
   HiPlus,
@@ -92,6 +93,7 @@ const CartPage = () => {
   const { user } = useAuth();
   const [cart, setCart] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [promoCode, setPromoCode] = useState('');
   const [discount, setDiscount] = useState(0);
@@ -160,12 +162,12 @@ const CartPage = () => {
           ? (subtotal * promo.discount) / 100 
           : promo.discount;
         setDiscount(Math.min(discountAmount, subtotal));
-        alert(`Promo code applied! You saved ₹${Math.min(discountAmount, subtotal)}`);
+        toast.success(`Promo code applied! You saved ₹${Math.min(discountAmount, subtotal)}`);
       } else {
-        alert(`Minimum order of ₹${promo.minOrder} required for this promo code`);
+        toast.error(`Minimum order of ₹${promo.minOrder} required for this promo code`);
       }
     } else {
-      alert('Invalid promo code');
+      toast.error('Invalid promo code');
     }
   };
 
@@ -176,9 +178,11 @@ const CartPage = () => {
 
   const handlePayment = async (amount) => {
     try {
+      setIsPlacingOrder(true);
+      
       // Check if user is logged in
       if (!user) {
-        alert('Please login first');
+        toast.error('Please login first');
         navigate('/login');
         return;
       }
@@ -231,12 +235,15 @@ const CartPage = () => {
       
       await Promise.all(orderPromises);
       
-      alert('Order placed successfully!');
+      toast.success('Order placed successfully!');
       clearAllItems();
       navigate('/my-orders/current');
     } catch (error) {
       console.error('Order creation failed:', error);
-      alert('Failed to place order. Please try again.');
+      const errorMessage = error.response?.data?.message || 'Failed to place order. Please try again.';
+      toast.error(errorMessage);
+    } finally {
+      setIsPlacingOrder(false);
     }
   }
 
@@ -511,10 +518,20 @@ const CartPage = () => {
                   onClick={() => {
                     handlePayment(finalTotal + Math.round(cartTotal * 0.05));
                   }}
-                  className="w-full py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2"
+                  disabled={isPlacingOrder}
+                  className="w-full py-4 bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white font-bold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 disabled:cursor-not-allowed"
                 >
-                  <HiOutlineCreditCard className="w-5 h-5" />
-                  <span>Proceed to Payment</span>
+                  {isPlacingOrder ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Placing Order...</span>
+                    </>
+                  ) : (
+                    <>
+                      <HiOutlineCreditCard className="w-5 h-5" />
+                      <span>Proceed to Payment</span>
+                    </>
+                  )}
                 </button>
 
                 {/* Payment Methods */}
