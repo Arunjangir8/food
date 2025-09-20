@@ -1,6 +1,4 @@
 import Login from './pages/Login/login.jsx'
-import LoginRestaurantPage from './pages/Login/restaurantLogin.jsx'
-import RestaurantSignupPage from './pages/Login/restaurantSignup.jsx'
 import { Dashboard } from './pages/Home/dashboard.jsx'
 import RestaurantsPage from './pages/Restaurants/restaurantsPage.jsx'
 import RestaurantDetailsPage from './pages/Restaurants/restaurantDetails.jsx'
@@ -11,6 +9,13 @@ import FavoritesPage from './pages/Favorites/index.jsx'
 import Navbar from './components/Navbar/header.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import PublicRoute from './components/PublicRoute.jsx'
+
+
+import LoginRestaurantPage from './pages/Login/restaurantLogin.jsx'
+import RestaurantSignupPage from './pages/Login/restaurantSignup.jsx'
+import RestaurantProfilePage from './pages/Profile/ProfileRestaurant.jsx'
+
+
 import { AuthProvider } from './context/AuthContext.jsx'
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
@@ -54,6 +59,7 @@ function App() {
               <Layout />
             </ProtectedRoute>
           }>
+            {/* User ROutes */}
             <Route index element={<Dashboard />} /> 
             <Route path="home" element={<Dashboard />} />
             <Route path="restaurants" element={<RestaurantsPage />} />
@@ -62,6 +68,9 @@ function App() {
             <Route path="cart" element={<CartPage />} />
             <Route path="favorites" element={<FavoritesPage />} />
             <Route path="profile" element={<ProfilePage />} />
+
+            {/* Restaurant Routes */}
+            <Route path="restaurant/my-profile" element={<RestaurantProfilePage />} />
           </Route>
           
           {/* Catch all route - redirect based on auth status */}

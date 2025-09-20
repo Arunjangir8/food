@@ -23,11 +23,12 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relations
-  addresses    Address[]
-  orders       Order[]
-  favorites    Favorite[]
-  reviews      Review[]
-  cartItems    CartItem[]
+  addresses         Address[]
+  orders            Order[]
+  favorites         Favorite[]
+  reviews           Review[]
+  cartItems         CartItem[]
+  ownedRestaurants  Restaurant[]  // Added: Restaurant owners can own multiple restaurants
 
   @@map("users")
 }
@@ -63,6 +64,9 @@ model Restaurant {
   isActive    Boolean  @default(true)
   isPromoted  Boolean  @default(false)
   
+  // Owner information - Added
+  ownerId     String
+  
   // Location
   address     String
   city        String
@@ -83,10 +87,11 @@ model Restaurant {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  menuItems MenuCategory[]
-  orders    Order[]
-  reviews   Review[]
-  favorites Favorite[]
+  owner         User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)  // Added
+  menuItems     MenuCategory[]
+  orders        Order[]
+  reviews       Review[]
+  favorites     Favorite[]
 
   @@map("restaurants")
 }

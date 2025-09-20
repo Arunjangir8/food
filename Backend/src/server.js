@@ -7,6 +7,10 @@ const rateLimit = require('express-rate-limit');
 
 // Routes
 const authRoutes = require('./routes/auth.routes');
+const restaurantRoutes = require('./routes/restaurant.routes');
+const menuRoutes = require('./routes/menu.routes');
+const orderRoutes = require('./routes/order.routes');
+const userRoutes = require('./routes/user.routes');
 
 const app = express();
 
@@ -41,6 +45,10 @@ if (process.env.NODE_ENV === 'development') {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/restaurants', restaurantRoutes);
+app.use('/api/menu', menuRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/users', userRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -68,7 +76,7 @@ app.use('*', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

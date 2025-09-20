@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { authAPI } from '../../services/api.js';
 import { 
   HiOutlineMail, 
   HiOutlineLockClosed, 
@@ -24,6 +26,7 @@ const RestaurantRegisterPage = () => {
   const [errors, setErrors] = useState({});
   
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     // User fields (Restaurant Owner)
     name: '',
@@ -174,36 +177,26 @@ const RestaurantRegisterPage = () => {
     
     setIsLoading(true);
     try {
-      // Transform data to match your Prisma schema
-      const registrationData = {
-        user: {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          password: formData.password,
-          role: 'RESTAURANT_OWNER'
-        },
-        restaurant: {
-          name: formData.restaurantName,
-          description: formData.description,
-          cuisine: formData.cuisine,
-          image: formData.image,
-          banner: formData.banner,
-          address: formData.address,
-          city: formData.city,
-          pincode: formData.pincode,
-          openTime: formData.openTime,
-          closeTime: formData.closeTime,
-          deliveryFee: parseFloat(formData.deliveryFee) || 0,
-          minOrder: parseFloat(formData.minOrder) || 0,
-          deliveryTime: formData.deliveryTime
-        }
-      };
+      const formDataToSend = new FormData();
       
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      console.log('Registration Data:', registrationData);
+      // Add all form fields
+      Object.keys(formData).forEach(key => {
+        if (key === 'cuisine') {
+          formDataToSend.append(key, JSON.stringify(formData[key]));
+        } else if (formData[key] !== null && formData[key] !== undefined) {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+      
+      const response = await authAPI.registerRestaurant(formDataToSend);
+      
+      if (response.data.success) {
+        login(response.data.data.user, response.data.data.token);
+        navigate('/restaurant/my-profile');
+      }
     } catch (error) {
       console.error('Registration failed:', error);
+      setErrors({ general: error.response?.data?.message || 'Registration failed' });
     } finally {
       setIsLoading(false);
     }

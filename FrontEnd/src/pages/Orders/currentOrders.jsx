@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { orderAPI } from '../../services/api.js';
 import {
     HiOutlineArrowLeft,
     HiOutlineShoppingCart,
@@ -238,22 +239,15 @@ const OrdersPage = () => {
         const fetchOrders = async () => {
             try {
                 setLoading(true);
-
-                // TODO: Replace with actual API call
-                // const response = await axios.get(`${API_BASE_URL}/orders/user/${user.id}`, {
-                //   headers: { Authorization: `Bearer ${token}` }
-                // });
-                // setOrders(response.data.orders);
-
-                // For now, using mock data
-                setTimeout(() => {
-                    setOrders(mockOrders);
-                    setFilteredOrders(mockOrders);
-                    setLoading(false);
-                }, 1000);
-
+                const response = await orderAPI.getUserOrders();
+                setOrders(response.data.data.orders);
+                setFilteredOrders(response.data.data.orders);
             } catch (error) {
                 console.error('Error fetching orders:', error);
+                // Fallback to mock data
+                setOrders(mockOrders);
+                setFilteredOrders(mockOrders);
+            } finally {
                 setLoading(false);
             }
         };
@@ -261,7 +255,7 @@ const OrdersPage = () => {
         if (user) {
             fetchOrders();
         }
-    }, [user, token]);
+    }, [user]);
 
     // Filter orders based on status, search term, and date
     useEffect(() => {

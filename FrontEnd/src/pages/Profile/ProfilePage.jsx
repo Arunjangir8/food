@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext.jsx'; // Add this import
+import { useAuth } from '../../context/AuthContext.jsx';
+import { userAPI } from '../../services/api.js';
 import {
   HiOutlineArrowLeft,
   HiOutlineUser,
@@ -184,26 +185,51 @@ const ProfilePage = () => {
 
   // Load data on component mount
   useEffect(() => {
-    if (user) {
-      const userProfile = {
-        name: user.name || 'User',
-        email: user.email || '',
-        phone: user.phone || '',
-        avatar: user.avatar || null,
-        dateJoined: user.createdAt || '2024-01-15',
-        totalOrders: 0,
-        favoriteRestaurants: 0,
-        points: 0
-      };
-      setProfile(userProfile);
-      setEditProfile(userProfile);
-    }
+    const fetchUserData = async () => {
+      try {
+        const [profileRes] = await Promise.all([
+          userAPI.getProfile()
+        ]);
+        
+        const userProfile = {
+          ...profileRes.data.data.user,
+          totalOrders: 0,
+          favoriteRestaurants: 0,
+          points: 0
+        };
+        
+        setProfile(userProfile);
+        setEditProfile(userProfile);
+        setAddresses(profileRes.data.data.user.addresses || []);
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        // Fallback to context user data
+        if (user) {
+          const userProfile = {
+            name: user.name || 'User',
+            email: user.email || '',
+            phone: user.phone || '',
+            avatar: user.avatar || null,
+            dateJoined: user.createdAt || '2024-01-15',
+            totalOrders: 0,
+            favoriteRestaurants: 0,
+            points: 0
+          };
+          setProfile(userProfile);
+          setEditProfile(userProfile);
+        }
+        
+        const savedAddresses = profileUtils.getAddresses();
+        setAddresses(savedAddresses);
+      }
+    };
     
     const savedSettings = profileUtils.getSettings();
-    const savedAddresses = profileUtils.getAddresses();
-    
     setSettings(savedSettings);
-    setAddresses(savedAddresses);
+    
+    if (user) {
+      fetchUserData();
+    }
   }, [user]);
 
   // Address management functions
@@ -225,13 +251,18 @@ const ProfilePage = () => {
     setShowAddressModal(true);
   };
 
-  const handleDeleteAddress = (addressId) => {
+  const handleDeleteAddress = async (addressId) => {
     const confirmed = window.confirm('Are you sure you want to delete this address?');
     if (confirmed) {
-      const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
-      setAddresses(updatedAddresses);
-      profileUtils.saveAddresses(updatedAddresses);
-      alert('Address deleted successfully!');
+      try {
+        await userAPI.deleteAddress(addressId);
+        const updatedAddresses = addresses.filter(addr => addr.id !== addressId);
+        setAddresses(updatedAddresses);
+        alert('Address deleted successfully!');
+      } catch (error) {
+        console.error('Failed to delete address:', error);
+        alert('Failed to delete address. Please try again.');
+      }
     }
   };
 
@@ -245,7 +276,7 @@ const ProfilePage = () => {
     alert('Default address updated successfully!');
   };
 
-  const handleSaveAddress = (e) => {
+  const handleSaveAddress = async (e) => {
     e.preventDefault();
     
     if (!addressForm.address.trim() || !addressForm.pincode.trim()) {
@@ -253,42 +284,40 @@ const ProfilePage = () => {
       return;
     }
 
-    let updatedAddresses;
-    
-    if (editingAddress) {
-      // Update existing address
-      updatedAddresses = addresses.map(addr => 
-        addr.id === editingAddress.id ? { ...addressForm, id: editingAddress.id } : addr
-      );
-    } else {
-      // Add new address
-      const newAddress = {
-        ...addressForm,
-        id: Date.now()
-      };
-      updatedAddresses = [...addresses, newAddress];
+    try {
+      if (editingAddress) {
+        // Update existing address
+        const response = await userAPI.updateAddress(editingAddress.id, addressForm);
+        const updatedAddresses = addresses.map(addr => 
+          addr.id === editingAddress.id ? response.data.data.address : addr
+        );
+        setAddresses(updatedAddresses);
+      } else {
+        // Add new address
+        const response = await userAPI.addAddress(addressForm);
+        setAddresses([...addresses, response.data.data.address]);
+      }
+      
+      setShowAddressModal(false);
+      alert(`Address ${editingAddress ? 'updated' : 'added'} successfully!`);
+    } catch (error) {
+      console.error('Failed to save address:', error);
+      alert('Failed to save address. Please try again.');
     }
-
-    // If this address is set as default, remove default from others
-    if (addressForm.isDefault) {
-      updatedAddresses = updatedAddresses.map(addr => ({
-        ...addr,
-        isDefault: addr.id === (editingAddress?.id || Date.now())
-      }));
-    }
-
-    setAddresses(updatedAddresses);
-    profileUtils.saveAddresses(updatedAddresses);
-    setShowAddressModal(false);
-    alert(`Address ${editingAddress ? 'updated' : 'added'} successfully!`);
   };
 
   // Save profile changes
-  const handleSaveProfile = () => {
-    setProfile(editProfile);
-    profileUtils.saveProfile(editProfile);
-    setIsEditing(false);
-    alert('Profile updated successfully!');
+  const handleSaveProfile = async () => {
+    try {
+      await userAPI.updateProfile(editProfile);
+      setProfile(editProfile);
+      profileUtils.saveProfile(editProfile);
+      setIsEditing(false);
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      alert('Failed to update profile. Please try again.');
+    }
   };
 
   // Cancel profile editing
@@ -311,7 +340,7 @@ const ProfilePage = () => {
   };
 
   // Handle password change
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert('New passwords do not match!');
       return;
@@ -321,14 +350,22 @@ const ProfilePage = () => {
       return;
     }
     
-    // In a real app, you would validate current password and update
-    alert('Password changed successfully!');
-    setShowChangePassword(false);
-    setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    });
+    try {
+      await userAPI.changePassword({
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      });
+      alert('Password changed successfully!');
+      setShowChangePassword(false);
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    } catch (error) {
+      console.error('Failed to change password:', error);
+      alert(error.response?.data?.message || 'Failed to change password');
+    }
   };
 
   // Handle avatar upload

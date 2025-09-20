@@ -7,6 +7,8 @@ import {
   HiOutlineUser
 } from 'react-icons/hi';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext.jsx';
+import { authAPI } from '../../services/api.js';
 
 const LoginRestaurantPage = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +19,7 @@ const LoginRestaurantPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -41,10 +44,13 @@ const LoginRestaurantPage = () => {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Login Data:', formData);
+      const response = await authAPI.loginRestaurant(formData);
+      if (response.data.success) {
+        login(response.data.data.user, response.data.data.token);
+        navigate('/restaurant/my-profile');
+      }
     } catch (error) {
-      console.error('Login failed:', error);
+      setErrors({ general: error.response?.data?.message || 'Login failed' });
     } finally {
       setIsLoading(false);
     }
@@ -84,6 +90,7 @@ const LoginRestaurantPage = () => {
                 />
               </div>
               {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+              {errors.general && <p className="text-xs text-red-500 mt-1">{errors.general}</p>}
             </div>
 
             {/* Password Field */}

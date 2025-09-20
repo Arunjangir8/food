@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { restaurantAPI } from '../../services/api.js';
 import {
     HiOutlineSearch,
     HiOutlineLocationMarker,
@@ -21,7 +22,6 @@ const RestaurantsPage = () => {
     const [sortBy, setSortBy] = useState('rating');
 
     // New filter states
-    const [dietaryPreference, setDietaryPreference] = useState('All'); // All, Veg, Non-Veg
     const [priceRange, setPriceRange] = useState([0, 1000]); // Min, Max price
     const [maxDistance, setMaxDistance] = useState(10); // Max distance in km
     const [showFilters, setShowFilters] = useState(false);
@@ -29,146 +29,37 @@ const RestaurantsPage = () => {
     const handleOrderNow = (restaurantId) => {
         navigate(`/restaurants/${restaurantId}`);
     };
-
-    // Mock restaurant data with enhanced properties
-    const [restaurants] = useState([
-        {
-            id: 1,
-            name: "Pizza Palace",
-            cuisine: "Italian",
-            rating: 4.8,
-            deliveryTime: 25,
-            deliveryFee: 2.5,
-            distance: 1.2,
-            image: "🍕",
-            isOpen: true,
-            promoted: true,
-            offer: "30% OFF",
-            description: "Authentic wood-fired pizzas with fresh ingredients",
-            dietaryType: "Both", // Veg, Non-Veg, Both
-            avgPrice: 350,
-            priceRange: "₹300-₹600"
-        },
-        {
-            id: 2,
-            name: "Burger Junction",
-            cuisine: "American",
-            rating: 4.6,
-            deliveryTime: 30,
-            deliveryFee: 3.0,
-            distance: 2.1,
-            image: "🍔",
-            isOpen: true,
-            promoted: false,
-            offer: null,
-            description: "Juicy burgers made with premium beef",
-            dietaryType: "Non-Veg",
-            avgPrice: 450,
-            priceRange: "₹400-₹700"
-        },
-        {
-            id: 3,
-            name: "Sushi Zen",
-            cuisine: "Japanese",
-            rating: 4.9,
-            deliveryTime: 35,
-            deliveryFee: 4.0,
-            distance: 3.5,
-            image: "🍣",
-            isOpen: false,
-            promoted: false,
-            offer: null,
-            description: "Fresh sushi and traditional Japanese cuisine",
-            dietaryType: "Both",
-            avgPrice: 800,
-            priceRange: "₹600-₹1200"
-        },
-        {
-            id: 4,
-            name: "Taco Fiesta",
-            cuisine: "Mexican",
-            rating: 4.4,
-            deliveryTime: 20,
-            deliveryFee: 2.0,
-            distance: 0.8,
-            image: "🌮",
-            isOpen: true,
-            promoted: true,
-            offer: "Free Delivery",
-            description: "Authentic Mexican flavors in every bite",
-            dietaryType: "Both",
-            avgPrice: 300,
-            priceRange: "₹200-₹500"
-        },
-        {
-            id: 5,
-            name: "Green Garden",
-            cuisine: "Indian",
-            rating: 4.7,
-            deliveryTime: 28,
-            deliveryFee: 2.5,
-            distance: 1.8,
-            image: "🥗",
-            isOpen: true,
-            promoted: false,
-            offer: null,
-            description: "Pure vegetarian Indian cuisine",
-            dietaryType: "Veg",
-            avgPrice: 250,
-            priceRange: "₹150-₹400"
-        },
-        {
-            id: 6,
-            name: "Curry House",
-            cuisine: "Indian",
-            rating: 4.5,
-            deliveryTime: 32,
-            deliveryFee: 3.5,
-            distance: 2.3,
-            image: "🍛",
-            isOpen: true,
-            promoted: false,
-            offer: "20% OFF",
-            description: "Authentic Indian curries and tandoor specialties",
-            dietaryType: "Both",
-            avgPrice: 400,
-            priceRange: "₹300-₹700"
-        },
-        {
-            id: 7,
-            name: "Meat Master",
-            cuisine: "Indian",
-            rating: 4.3,
-            deliveryTime: 40,
-            deliveryFee: 3.0,
-            distance: 4.2,
-            image: "🍖",
-            isOpen: true,
-            promoted: false,
-            offer: null,
-            description: "Premium non-veg dishes and grills",
-            dietaryType: "Non-Veg",
-            avgPrice: 600,
-            priceRange: "₹500-₹900"
-        },
-        {
-            id: 8,
-            name: "Healthy Bites",
-            cuisine: "Continental",
-            rating: 4.6,
-            deliveryTime: 25,
-            deliveryFee: 2.0,
-            distance: 1.5,
-            image: "🥙",
-            isOpen: true,
-            promoted: false,
-            offer: "25% OFF",
-            description: "Healthy wraps, salads and smoothies",
-            dietaryType: "Veg",
-            avgPrice: 280,
-            priceRange: "₹200-₹450"
-        }
-    ]);
+    
+    const [restaurants, setRestaurants] = useState([]);
+    const [loading, setLoading] = useState(true);
+    
+    // Load restaurants from API
+    useEffect(() => {
+        const fetchRestaurants = async () => {
+            try {
+                const response = await restaurantAPI.getAll({
+                    city: selectedLocation,
+                    cuisine: selectedCuisine !== 'All' ? selectedCuisine : undefined,
+                    search: searchQuery
+                });
+                // Add missing properties to restaurant data
+                const restaurantsWithDefaults = response.data.data.restaurants.map(restaurant => ({
+                    ...restaurant,
+                    distance: 2.5, // Default distance
+                    avgPrice: 300, // Default average price
+                    priceRange: '₹200-400' // Default price range
+                }));
+                setRestaurants(restaurantsWithDefaults);
+            } catch (error) {
+                console.error('Failed to fetch restaurants:', error);
+                setRestaurants([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        fetchRestaurants();
+    }, [selectedLocation, selectedCuisine, searchQuery]);
 
     const cuisines = ['All', 'Italian', 'American', 'Japanese', 'Mexican', 'Indian', 'Continental'];
     const locations = ['Delhi', 'Mumbai', 'Bangalore', 'Chennai', 'Kolkata'];
@@ -185,16 +76,15 @@ const RestaurantsPage = () => {
 
     const filteredRestaurants = restaurants
         .filter(restaurant => {
-            const matchesSearch = restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                restaurant.cuisine.toLowerCase().includes(searchQuery.toLowerCase());
-            const matchesCuisine = selectedCuisine === 'All' || restaurant.cuisine === selectedCuisine;
-            const matchesDietary = dietaryPreference === 'All' ||
-                restaurant.dietaryType === dietaryPreference ||
-                restaurant.dietaryType === 'Both';
+            const matchesSearch = !searchQuery || 
+                restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                restaurant.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                restaurant.cuisine.some(c => c.toLowerCase().includes(searchQuery.toLowerCase()));
+            const matchesCuisine = selectedCuisine === 'All' || restaurant.cuisine.includes(selectedCuisine);
             const matchesPrice = restaurant.avgPrice >= priceRange[0] && restaurant.avgPrice <= priceRange[1];
             const matchesDistance = restaurant.distance <= maxDistance;
 
-            return matchesSearch && matchesCuisine && matchesDietary && matchesPrice && matchesDistance;
+            return matchesSearch && matchesCuisine && matchesPrice && matchesDistance;
         })
         .sort((a, b) => {
             switch (sortBy) {
@@ -286,31 +176,7 @@ const RestaurantsPage = () => {
                     <div className='flex justify-center w-full'>
                         {showFilters && (
                             <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 animate-slideDown">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-                                    {/* Dietary Preference Filter */}
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-3">Dietary Preference</label>
-                                        <div className="space-y-2">
-                                            {['All', 'Veg', 'Non-Veg'].map(option => (
-                                                <label key={option} className="flex items-center space-x-2 cursor-pointer">
-                                                    <input
-                                                        type="radio"
-                                                        name="dietary"
-                                                        value={option}
-                                                        checked={dietaryPreference === option}
-                                                        onChange={(e) => setDietaryPreference(e.target.value)}
-                                                        className="w-4 h-4 text-red-500 focus:ring-red-500 focus:ring-2"
-                                                    />
-                                                    <span className="text-gray-700 flex items-center space-x-1">
-                                                        {option === 'Veg' && <span className="w-3 h-3 bg-green-500 rounded-full"></span>}
-                                                        {option === 'Non-Veg' && <span className="w-3 h-3 bg-red-500 rounded-full"></span>}
-                                                        <span>{option}</span>
-                                                    </span>
-                                                </label>
-                                            ))}
-                                        </div>
-                                    </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
                                     {/* Price Range Filter */}
                                     <div>
@@ -399,17 +265,10 @@ const RestaurantsPage = () => {
                     </div>
 
                     {/* Active Filters Display */}
-                    {(dietaryPreference !== 'All' || priceRange[0] > 0 || priceRange[1] < 1000 || maxDistance < 20) && (
+                    {(priceRange[0] > 0 || priceRange[1] < 1000 || maxDistance < 20) && (
                         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                             <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <span className="text-sm font-semibold text-blue-800">Active Filters:</span>
-                                {dietaryPreference !== 'All' && (
-                                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm flex items-center space-x-1">
-                                        {dietaryPreference === 'Veg' && <span className="w-2 h-2 bg-green-500 rounded-full"></span>}
-                                        {dietaryPreference === 'Non-Veg' && <span className="w-2 h-2 bg-red-500 rounded-full"></span>}
-                                        <span>{dietaryPreference}</span>
-                                    </span>
-                                )}
                                 {(priceRange[0] > 0 || priceRange[1] < 1000) && (
                                     <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
                                         ₹{priceRange[0]} - ₹{priceRange[1]}
@@ -433,8 +292,14 @@ const RestaurantsPage = () => {
                 </div>
 
                 {/* Restaurant Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filteredRestaurants.map((restaurant, index) => (
+                {loading ? (
+                    <div className="text-center py-16">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading restaurants...</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {filteredRestaurants.map((restaurant, index) => (
                         <div
                             key={restaurant.id}
                             className="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group overflow-hidden"
@@ -448,20 +313,7 @@ const RestaurantsPage = () => {
                                 <div className="relative bg-gradient-to-br from-orange-200 to-red-200 rounded-2xl h-48 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
                                     <div className="text-6xl">{restaurant.image}</div>
 
-                                    {/* Dietary Type Badge */}
-                                    <div className={`absolute top-4 left-4 w-6 h-6 rounded-full border-2 flex items-center justify-center ${restaurant.dietaryType === 'Veg'
-                                        ? 'border-green-600 bg-white'
-                                        : restaurant.dietaryType === 'Non-Veg'
-                                            ? 'border-red-600 bg-white'
-                                            : 'border-orange-600 bg-white'
-                                        }`}>
-                                        <div className={`w-3 h-3 rounded-full ${restaurant.dietaryType === 'Veg'
-                                            ? 'bg-green-600'
-                                            : restaurant.dietaryType === 'Non-Veg'
-                                                ? 'bg-red-600'
-                                                : 'bg-orange-600'
-                                            }`}></div>
-                                    </div>
+
 
                                     {/* Promoted Badge */}
                                     {restaurant.promoted && (
@@ -478,11 +330,11 @@ const RestaurantsPage = () => {
                                     )}
 
                                     {/* Status Badge */}
-                                    <div className={`absolute bottom-4 left-4 px-3 py-1 rounded-full text-sm font-semibold ${restaurant.isOpen
+                                    <div className={`absolute bottom-4 left-4 px-3 py-1 rounded-full text-sm font-semibold ${restaurant.isActive
                                         ? 'bg-green-100 text-green-800'
                                         : 'bg-red-100 text-red-800'
                                         }`}>
-                                        {restaurant.isOpen ? 'Open' : 'Closed'}
+                                        {restaurant.isActive ? 'Open' : 'Closed'}
                                     </div>
 
                                     {/* Favorite Button */}
@@ -508,15 +360,7 @@ const RestaurantsPage = () => {
                                     <p className="text-gray-600 text-sm mb-2">{restaurant.description}</p>
                                     <div className="flex items-center justify-between text-sm text-gray-500 mb-2">
                                         <div className="flex items-center space-x-2">
-                                            <span className="px-2 py-1 bg-gray-100 rounded-full">{restaurant.cuisine}</span>
-                                            <span className={`px-2 py-1 rounded-full ${restaurant.dietaryType === 'Veg'
-                                                ? 'bg-green-100 text-green-800'
-                                                : restaurant.dietaryType === 'Non-Veg'
-                                                    ? 'bg-red-100 text-red-800'
-                                                    : 'bg-orange-100 text-orange-800'
-                                                }`}>
-                                                {restaurant.dietaryType === 'Both' ? 'Veg & Non-Veg' : restaurant.dietaryType}
-                                            </span>
+                                            <span className="px-2 py-1 bg-gray-100 rounded-full">{restaurant.cuisine.join(', ')}</span>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between text-sm text-gray-500">
@@ -547,20 +391,21 @@ const RestaurantsPage = () => {
 
                                 {/* Order Button */}
                                 <button
-                                    disabled={!restaurant.isOpen}
-                                    onClick={() => restaurant.isOpen && handleOrderNow(restaurant.id)}
-                                    className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${restaurant.isOpen
+                                    disabled={!restaurant.isActive}
+                                    onClick={() => restaurant.isActive && handleOrderNow(restaurant.id)}
+                                    className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center space-x-2 ${restaurant.isActive
                                         ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 cursor-pointer'
                                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                         }`}
                                 >
                                     <HiOutlineTruck className="w-5 h-5" />
-                                    <span>{restaurant.isOpen ? 'Order Now' : 'Currently Closed'}</span>
+                                    <span>{restaurant.isActive ? 'Order Now' : 'Currently Closed'}</span>
                                 </button>
                             </div>
                         </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* No Results */}
                 {filteredRestaurants.length === 0 && (
@@ -572,9 +417,9 @@ const RestaurantsPage = () => {
                             onClick={() => {
                                 setSearchQuery('');
                                 setSelectedCuisine('All');
-                                setDietaryPreference('All');
                                 setPriceRange([0, 1000]);
-                                setMaxDistance(10);
+                                setMaxDistance(20);
+                                setShowFilters(false);
                             }}
                             className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors duration-200"
                         >

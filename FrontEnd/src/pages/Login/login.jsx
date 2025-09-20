@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
-import { useAuth } from '../../context/AuthContext.jsx'; // Add this import
+import { useAuth } from '../../context/AuthContext.jsx';
+import { authAPI } from '../../services/api.js';
 import * as Components from "../../style/loginstyle.js";
-
-const API_BASE_URL = 'http://localhost:3001/api';
 
 const Login = () => {
   const [signIn, setSignIn] = useState(true);
@@ -59,7 +57,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/login`, signInForm);
+      const response = await authAPI.login(signInForm);
       
       if (response.data.success) {
         // Use the auth context login function instead of direct localStorage
@@ -81,7 +79,7 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/auth/register`, signUpForm);
+      const response = await authAPI.register(signUpForm);
       
       if (response.data.success) {
         // Use the auth context login function instead of direct localStorage

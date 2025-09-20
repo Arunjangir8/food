@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { orderAPI, userAPI } from '../../services/api.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { 
   HiOutlineArrowLeft,
   HiPlus,
@@ -87,6 +89,7 @@ const cartUtils = {
 
 const CartPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [cart, setCart] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -98,6 +101,16 @@ const CartPage = () => {
     fee: 25,
     estimatedTime: '25-35 mins',
     address: '123 Main Street, Apartment 4B, Delhi - 110001'
+  };
+
+  // Mock default address for testing
+  const mockAddress = {
+    id: 'mock-address-1',
+    type: 'Home',
+    address: '123 Main Street, Apartment 4B',
+    city: 'Delhi',
+    pincode: '110001',
+    isDefault: true
   };
 
   // Mock promo codes
@@ -161,10 +174,70 @@ const CartPage = () => {
   const finalTotal = cartTotal + deliveryInfo.fee - discount;
   const groupedCart = cartUtils.groupCartByRestaurant();
 
-  const handlePayment = (amount) => {
-    alert(`Proceeding to payment of ₹${amount}`);
-    clearAllItems();
-    navigate('/my-orders/current')
+  const handlePayment = async (amount) => {
+    try {
+      // Check if user is logged in
+      if (!user) {
+        alert('Please login first');
+        navigate('/login');
+        return;
+      }
+
+      let defaultAddress = mockAddress; // Use mock address as fallback
+      
+      try {
+        // Try to get user profile with addresses
+        const profileResponse = await userAPI.getProfile();
+        const userProfile = profileResponse.data.data.user;
+        
+        // Get user's default address if available
+        const userAddress = userProfile?.addresses?.find(addr => addr.isDefault) || userProfile?.addresses?.[0];
+        if (userAddress) {
+          defaultAddress = userAddress;
+        }
+      } catch (error) {
+        console.log('Using mock address for testing:', error.message);
+      }
+      
+      // Group cart items by restaurant - fix restaurant ID mapping
+      const restaurantIdMap = {
+        '1': 'cmfs532l70003oxxm9u3jh6bl', // Pizza Palace
+        'cmfs532l70003oxxm9u3jh6bl': 'cmfs532l70003oxxm9u3jh6bl' // Already correct
+      };
+      
+      const restaurantGroups = cart.reduce((groups, item) => {
+        const restaurantId = restaurantIdMap[item.restaurantId] || item.restaurantId;
+        if (!groups[restaurantId]) {
+          groups[restaurantId] = [];
+        }
+        groups[restaurantId].push({
+          menuItemId: item.itemId,
+          quantity: item.quantity,
+          customizations: item.customizations
+        });
+        return groups;
+      }, {});
+      
+      // Create orders for each restaurant
+      const orderPromises = Object.entries(restaurantGroups).map(([restaurantId, items]) => {
+        return orderAPI.create({
+          restaurantId,
+          addressId: defaultAddress.id,
+          items,
+          paymentMethod: 'Online Payment',
+          deliveryInstructions: ''
+        });
+      });
+      
+      await Promise.all(orderPromises);
+      
+      alert('Order placed successfully!');
+      clearAllItems();
+      navigate('/my-orders/current');
+    } catch (error) {
+      console.error('Order creation failed:', error);
+      alert('Failed to place order. Please try again.');
+    }
   }
 
   const ClearConfirmModal = () => (

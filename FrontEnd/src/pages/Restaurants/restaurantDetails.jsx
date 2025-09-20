@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { restaurantAPI, menuAPI } from '../../services/api.js';
 import { 
   HiOutlineArrowLeft,
   HiStar,
@@ -45,8 +46,8 @@ const cartUtils = {
     const cartItem = {
       id: Date.now(),
       itemId: item.id,
-      restaurantId: item.restaurantId || 1,
-      restaurantName: item.restaurantName || "Pizza Palace",
+      restaurantId: item.restaurantId,
+      restaurantName: item.restaurantName,
       name: item.name,
       price: item.price,
       customizationPrice,
@@ -113,8 +114,8 @@ const favoritesUtils = {
     const favoriteItem = {
       id: item.id,
       itemId: item.id,
-      restaurantId: item.restaurantId || 1,
-      restaurantName: item.restaurantName || "Pizza Palace",
+      restaurantId: item.restaurantId,
+      restaurantName: item.restaurantName,
       name: item.name,
       price: item.price,
       description: item.description,
@@ -173,6 +174,9 @@ const RestaurantDetailsPage = () => {
   const [cart, setCart] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [showCustomization, setShowCustomization] = useState(null);
+  const [restaurant, setRestaurant] = useState(null);
+  const [menuItems, setMenuItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Load cart and favorites from localStorage on component mount
   useEffect(() => {
@@ -182,8 +186,8 @@ const RestaurantDetailsPage = () => {
     setFavorites(savedFavorites);
   }, []);
 
-  // Mock restaurant data
-  const restaurant = {
+  // Mock restaurant data for fallback
+  const mockRestaurant = {
     id: parseInt(id),
     name: "Pizza Palace",
     cuisine: "Italian",
@@ -200,8 +204,8 @@ const RestaurantDetailsPage = () => {
     minOrder: 200
   };
 
-  // Mock menu data
-  const [menuItems] = useState([
+  // Mock menu data for fallback
+  const mockMenuItems = [
     {
       id: 1,
       name: "Margherita Pizza",
@@ -211,8 +215,8 @@ const RestaurantDetailsPage = () => {
       category: "Pizza",
       dietaryType: "Veg",
       popular: true,
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
+      restaurantId: parseInt(id),
+      restaurantName: "Pizza Palace",
       customizations: [
         {
           name: "Size",
@@ -246,8 +250,8 @@ const RestaurantDetailsPage = () => {
       category: "Pizza",
       dietaryType: "Non-Veg",
       popular: true,
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
+      restaurantId: parseInt(id),
+      restaurantName: "Pizza Palace",
       customizations: [
         {
           name: "Size",
@@ -280,8 +284,8 @@ const RestaurantDetailsPage = () => {
       category: "Salads",
       dietaryType: "Veg",
       popular: false,
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
+      restaurantId: parseInt(id),
+      restaurantName: "Pizza Palace",
       customizations: [
         {
           name: "Add Protein",
@@ -304,8 +308,8 @@ const RestaurantDetailsPage = () => {
       category: "Appetizers",
       dietaryType: "Veg",
       popular: false,
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
+      restaurantId: parseInt(id),
+      restaurantName: "Pizza Palace",
       customizations: [
         {
           name: "Extra Add-ons",
@@ -327,17 +331,111 @@ const RestaurantDetailsPage = () => {
       category: "Desserts",
       dietaryType: "Veg",
       popular: true,
-      restaurantId: restaurant.id,
-      restaurantName: restaurant.name,
+      restaurantId: parseInt(id),
+      restaurantName: "Pizza Palace",
       customizations: []
     }
-  ]);
+  ];
 
-  const categories = ['All', 'Pizza', 'Salads', 'Appetizers', 'Desserts'];
+  // Load restaurant and menu data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log('Fetching restaurant data for ID:', id);
+        
+        const [restaurantRes, menuRes] = await Promise.all([
+          restaurantAPI.getById(id),
+          menuAPI.getByRestaurant(id)
+        ]);
+        
+        console.log('Restaurant API response:', restaurantRes.data);
+        console.log('Menu API response:', menuRes.data);
+        
+        const restaurantData = restaurantRes.data.data.restaurant;
+        setRestaurant({
+          ...restaurantData,
+          // Add missing properties with defaults
+          distance: 2.5,
+          avgPrice: 300,
+          priceRange: '₹200-400',
+          image: restaurantData.image || '🍕',
+          phone: '+91 98765 43210'
+        });
+        
+        // Transform menu categories to flat menu items
+        const items = [];
+        if (menuRes.data.data.menuCategories && menuRes.data.data.menuCategories.length > 0) {
+          menuRes.data.data.menuCategories.forEach(category => {
+            if (category.items && category.items.length > 0) {
+              category.items.forEach(item => {
+                items.push({
+                  ...item,
+                  category: category.name,
+                  restaurantId: restaurantData.id,
+                  restaurantName: restaurantData.name,
+                  image: item.image || '🍕',
+                  dietaryType: item.isVeg ? 'Veg' : 'Non-Veg',
+                  popular: item.isPopular || false
+                });
+              });
+            }
+          });
+        }
+        
+        console.log('Processed menu items:', items);
+        setMenuItems(items);
+        
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+        console.error('Error details:', error.response?.data || error.message);
+        // Fallback to mock data
+        setRestaurant({
+          ...mockRestaurant,
+          id: parseInt(id),
+          name: `Restaurant ${id}`
+        });
+        setMenuItems(mockMenuItems.map(item => ({
+          ...item,
+          restaurantId: parseInt(id),
+          restaurantName: `Restaurant ${id}`
+        })));
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [id]);
+
+  const categories = ['All', ...new Set(menuItems.map(item => item.category))];
 
   const filteredItems = selectedCategory === 'All' 
     ? menuItems 
     : menuItems.filter(item => item.category === selectedCategory);
+    
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading restaurant...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!restaurant) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Restaurant not found</h2>
+          <button onClick={() => navigate('/restaurants')} className="bg-red-500 text-white px-6 py-3 rounded-xl">
+            Back to Restaurants
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const addToCart = (item, customizations = {}) => {
     const updatedCart = cartUtils.addToCart(item, customizations);
@@ -598,7 +696,14 @@ const RestaurantDetailsPage = () => {
 
             {/* Menu Items */}
             <div className="space-y-4">
-              {filteredItems.map(item => (
+              {filteredItems.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
+                  <div className="text-6xl mb-4">🍽️</div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No menu items available</h3>
+                  <p className="text-gray-600">This restaurant hasn't added any menu items yet.</p>
+                </div>
+              ) : (
+                filteredItems.map(item => (
                 <div key={item.id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                   <div className="p-6">
                     <div className="flex items-start space-x-4">
@@ -660,7 +765,8 @@ const RestaurantDetailsPage = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
