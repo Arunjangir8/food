@@ -59,6 +59,38 @@ const uploadRestaurantImages = multer({
   }
 });
 
+// User avatar storage
+const avatarStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'users/avatars',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [
+      { width: 400, height: 400, crop: 'fill', quality: 'auto:good' }
+    ],
+    public_id: (req, file) => {
+      const timestamp = Date.now();
+      const random = Math.round(Math.random() * 1E9);
+      return `avatar_${timestamp}_${random}`;
+    }
+  }
+});
+
+// Avatar upload configuration
+const uploadAvatar = multer({
+  storage: avatarStorage,
+  limits: {
+    fileSize: 2 * 1024 * 1024, // 2MB limit
+    files: 1 // max 1 file
+  },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed'));
+    }
+    cb(null, true);
+  }
+});
+
 // Delete image from Cloudinary
 const deleteImage = async (publicId) => {
   try {
@@ -72,5 +104,6 @@ const deleteImage = async (publicId) => {
 module.exports = {
   cloudinary,
   uploadRestaurantImages,
+  uploadAvatar,
   deleteImage
 };

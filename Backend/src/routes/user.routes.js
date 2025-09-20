@@ -1,6 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const { authenticate } = require('../middleware/auth.middleware');
+const { uploadAvatar } = require('../config/cloudinary');
 const {
   getProfile,
   updateProfile,
@@ -18,6 +19,7 @@ router.use(authenticate);
 router.get('/profile', getProfile);
 
 router.put('/profile',
+  uploadAvatar.single('avatar'),
   [
     body('name').optional().trim().isLength({ min: 2, max: 50 }),
     body('phone').optional().isMobilePhone()

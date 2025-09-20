@@ -42,11 +42,17 @@ const updateProfile = async (req, res) => {
       });
     }
 
-    const { name, phone, avatar } = req.body;
+    const { name, phone } = req.body;
+    const avatar = req.file ? req.file.path : undefined;
+
+    const updateData = { name, phone };
+    if (avatar) {
+      updateData.avatar = avatar;
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: req.user.id },
-      data: { name, phone, avatar },
+      data: updateData,
       select: {
         id: true,
         email: true,
