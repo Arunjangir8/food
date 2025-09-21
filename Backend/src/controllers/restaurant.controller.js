@@ -223,6 +223,29 @@ const getMyRestaurant = async (req, res) => {
   }
 };
 
+const getCuisines = async (req, res) => {
+  try {
+    const restaurants = await prisma.restaurant.findMany({
+      select: { cuisine: true },
+      where: { isActive: true }
+    });
+
+    const allCuisines = restaurants.flatMap(r => r.cuisine);
+    const uniqueCuisines = [...new Set(allCuisines)].sort();
+
+    res.json({
+      success: true,
+      data: { cuisines: uniqueCuisines }
+    });
+  } catch (error) {
+    console.error('Get cuisines error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
 const uploadImages = async (req, res) => {
   try {
     const { id } = req.params;
@@ -289,5 +312,6 @@ module.exports = {
   getRestaurantById,
   updateRestaurant,
   getMyRestaurant,
+  getCuisines,
   uploadImages
 };

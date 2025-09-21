@@ -48,6 +48,7 @@ export const restaurantAPI = {
   getById: (id) => api.get(`/restaurants/${id}`),
   update: (id, data) => api.put(`/restaurants/${id}`, data),
   getMyRestaurant: () => api.get('/restaurants/my-restaurant'),
+  getCuisines: () => api.get('/restaurants/cuisines/all'),
   uploadImages: (id, formData) => api.post(`/restaurants/${id}/upload-images`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),

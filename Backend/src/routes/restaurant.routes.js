@@ -7,6 +7,7 @@ const {
   getRestaurantById,
   updateRestaurant,
   getMyRestaurant,
+  getCuisines,
   uploadImages
 } = require('../controllers/restaurant.controller');
 
@@ -15,10 +16,10 @@ const router = express.Router();
 
 router.get('/', getAllRestaurants);
 
+router.get('/cuisines/all', getCuisines);
 
 router.get('/my-restaurant',
   authenticate,
-  authorize('RESTAURANT_OWNER'),
   getMyRestaurant
 );
 

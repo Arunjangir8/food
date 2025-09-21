@@ -34,6 +34,7 @@ const RestaurantsPage = () => {
     };
     
     const [restaurants, setRestaurants] = useState([]);
+    const [cuisines, setCuisines] = useState(['All']);
     const [loading, setLoading] = useState(true);
     
     // Close location dropdown when clicking outside
@@ -46,6 +47,20 @@ const RestaurantsPage = () => {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showLocationDropdown]);
+
+    // Load cuisines from API
+    useEffect(() => {
+        const fetchCuisines = async () => {
+            try {
+                const response = await restaurantAPI.getCuisines();
+                setCuisines(['All', ...response.data.data.cuisines]);
+            } catch (error) {
+                console.error('Failed to fetch cuisines:', error);
+            }
+        };
+        
+        fetchCuisines();
+    }, []);
 
     // Load restaurants from API
     useEffect(() => {
@@ -75,7 +90,7 @@ const RestaurantsPage = () => {
         fetchRestaurants();
     }, [selectedLocation, selectedCuisine, searchQuery]);
 
-    const cuisines = ['All', 'Italian', 'American', 'Japanese', 'Mexican', 'Indian', 'Continental'];
+    // const cuisines = ['All', 'Italian', 'American', 'Japanese', 'Mexican', 'Indian', 'Continental'];
 
     // const toggleFavorite = (id) => {
     //     const newFavorites = new Set(favorites);
