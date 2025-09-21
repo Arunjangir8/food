@@ -360,8 +360,19 @@ const RestaurantsPage = () => {
                         >
                             {/* Restaurant Image Container */}
                             <div className="relative p-6 pb-4">
-                                <div className="relative bg-gradient-to-br from-orange-200 to-red-200 rounded-md h-48 flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-                                    <div className="text-6xl">{restaurant.image}</div>
+                                <div className="relative bg-gradient-to-br from-orange-200 to-red-200 rounded-md h-48 flex items-center justify-center group-hover:scale-105 transition-transform duration-500 overflow-hidden">
+                                    {restaurant.image ? (
+                                        <img 
+                                            src={restaurant.image} 
+                                            alt={restaurant.name}
+                                            className="w-full h-full object-cover rounded-md"
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'block';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <div className="text-6xl" style={{display: restaurant.image ? 'none' : 'block'}}>🍕</div>
 
 
 

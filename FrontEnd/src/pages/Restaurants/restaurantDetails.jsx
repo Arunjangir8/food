@@ -31,6 +31,7 @@ const RestaurantDetailsPage = () => {
   const [cart, setCart] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [showCustomization, setShowCustomization] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
   const [restaurant, setRestaurant] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -233,6 +234,7 @@ const RestaurantDetailsPage = () => {
           avgPrice: 300,
           priceRange: '₹200-400',
           image: restaurantData.image || '🍕',
+          banner: restaurantData.banner,
           phone: '+91 98765 43210'
         });
         
@@ -535,10 +537,26 @@ const RestaurantDetailsPage = () => {
         <div className="flex">
           {/* Left Side - Menu Items */}
           <div className="flex-1 px-4 sm:px-6 lg:px-8 py-6">
+
             {/* Restaurant Info */}
             <div className="bg-white rounded-md shadow-xl p-6 mb-6">
               <div className="flex items-center space-x-4">
-                <div className="text-6xl">{restaurant.image}</div>
+                <div 
+                  className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => restaurant.image && setShowImageModal(true)}
+                >
+                  {restaurant.image ? (
+                    <img 
+                      src={restaurant.image} 
+                      alt={restaurant.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-3xl">
+                      🍕
+                    </div>
+                  )}
+                </div>
                 <div className="flex-1">
                   <p className="text-gray-600 mb-2">{restaurant.description}</p>
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -802,6 +820,25 @@ const RestaurantDetailsPage = () => {
           onClose={() => setShowCustomization(null)}
           onAdd={addToCart}
         />
+      )}
+
+      {/* Image Modal */}
+      {showImageModal && restaurant.image && (
+        <div className="fixed inset-0 w-[100vw] bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onClick={() => setShowImageModal(false)}>
+          <div className="relative max-w-4xl max-h-[90vh]">
+            <img 
+              src={restaurant.image} 
+              alt={restaurant.name}
+              className="w-full h-full object-contain rounded-md"
+            />
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute top-4 right-4 p-2 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full transition-all duration-200"
+            >
+              <HiOutlineX className="w-6 h-6 text-white" />
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
