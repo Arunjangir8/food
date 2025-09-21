@@ -247,16 +247,16 @@ const FavoritesPage = () => {
     };
 
     return (
-      <div className="fixed inset-0 w-[100vw] bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6">
+      <div className="fixed inset-0 w-[100vw] bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4">
+        <div className="bg-white rounded-2xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+          <div className="p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-gray-900">{item.name}</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900">{item.name}</h3>
               <button
                 onClick={onClose}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
               >
-                <HiOutlineX className="w-5 h-5" />
+                <HiOutlineX className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
@@ -332,9 +332,9 @@ const FavoritesPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-[100vw] pt-16 bg-white flex">
+    <div className="min-h-screen w-[100vw] pt-16 bg-white flex flex-col lg:flex-row">
       {/* Left Sidebar */}
-      <div className="w-80 bg-white shadow-xl border-r border-gray-200 flex flex-col">
+      <div className="w-full lg:w-80 bg-white shadow-xl border-r border-gray-200 flex flex-col lg:h-auto h-auto max-h-screen lg:max-h-none overflow-y-auto lg:overflow-y-visible">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center space-x-4 mb-4">
@@ -364,7 +364,7 @@ const FavoritesPage = () => {
         </div>
 
         {/* Filters */}
-        <div className="flex-1 p-6 overflow-y-auto">
+        <div className="flex-1 p-6 overflow-y-auto lg:block hidden">
           {/* Category Filter */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-700 mb-3">Categories</h3>
@@ -457,7 +457,7 @@ const FavoritesPage = () => {
       </div>
 
       {/* Right Content Area */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 p-3 lg:p-6 overflow-y-auto">
         {loading ? (
           <div className="text-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
@@ -486,10 +486,10 @@ const FavoritesPage = () => {
             <div className="space-y-4">
               {sortedFavorites.map(item => (
                 <div key={item.id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                  <div className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="relative">
-                        <div className="w-20 h-20 bg-gradient-to-br from-orange-200 to-red-200 rounded-xl overflow-hidden flex items-center justify-center">
+                  <div className="p-3 lg:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-start space-y-3 sm:space-y-0 sm:space-x-4">
+                      <div className="relative flex-shrink-0 self-center sm:self-start">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-orange-200 to-red-200 rounded-xl overflow-hidden flex items-center justify-center">
                           {item.image && item.image.startsWith('http') ? (
                             <img 
                               src={item.image} 
@@ -501,65 +501,67 @@ const FavoritesPage = () => {
                               }}
                             />
                           ) : null}
-                          <div className="w-full h-full flex items-center justify-center text-3xl" style={{display: item.image && item.image.startsWith('http') ? 'none' : 'flex'}}>
+                          <div className="w-full h-full flex items-center justify-center text-2xl sm:text-3xl" style={{display: item.image && item.image.startsWith('http') ? 'none' : 'flex'}}>
                             {item.image && !item.image.startsWith('http') ? item.image : '🍕'}
                           </div>
                         </div>
 
                         {/* Dietary Badge */}
-                        <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center bg-white ${item.dietaryType === 'Veg' ? 'border-green-600' : 'border-red-600'
+                        <div className={`absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 flex items-center justify-center bg-white ${item.dietaryType === 'Veg' ? 'border-green-600' : 'border-red-600'
                           }`}>
-                          <div className={`w-3 h-3 rounded-full ${item.dietaryType === 'Veg' ? 'bg-green-600' : 'bg-red-600'
+                          <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${item.dietaryType === 'Veg' ? 'bg-green-600' : 'bg-red-600'
                             }`}></div>
                         </div>
 
                         {/* Popular Badge */}
                         {item.popular && (
-                          <div className="absolute -bottom-2 -left-2 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                          <div className="absolute -bottom-1 -left-1 sm:-bottom-2 sm:-left-2 bg-orange-500 text-white px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-semibold">
                             Popular
                           </div>
                         )}
                       </div>
 
                       <div className="flex-1">
-                        <div className="flex items-start justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between">
                           <div className="flex-1">
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-1">{item.name}</h3>
-                                <p className="text-sm text-gray-500 mb-1">{item.restaurantName}</p>
-                                <p className="text-gray-600 text-sm mb-2">{item.description}</p>
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-2 gap-2">
+                              <div className="flex-1">
+                                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-1">{item.name}</h3>
+                                <p className="text-xs sm:text-sm text-gray-500 mb-1">{item.restaurantName}</p>
+                                <p className="text-gray-600 text-xs sm:text-sm mb-2 line-clamp-2">{item.description}</p>
                               </div>
 
                               <button
                                 onClick={() => removeFromFavorites(item.id)}
                                 disabled={removingFavorite === item.id}
-                                className="p-2 hover:bg-red-100 rounded-full transition-colors duration-200 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="p-1.5 sm:p-2 hover:bg-red-100 rounded-full transition-colors duration-200 text-red-500 disabled:opacity-50 disabled:cursor-not-allowed self-start"
                                 title="Remove from favorites"
                               >
                                 {removingFavorite === item.id ? (
-                                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-red-500"></div>
+                                  <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-red-500"></div>
                                 ) : (
-                                  <HiTrash className="w-5 h-5" />
+                                  <HiTrash className="w-4 h-4 sm:w-5 sm:h-5" />
                                 )}
                               </button>
                             </div>
 
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                <p className="text-xl font-bold text-red-500">₹{item.price}</p>
-                                <span className="bg-gray-100 px-2 py-1 rounded-full text-xs text-gray-600">
-                                  {item.category}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  Added {new Date(item.addedAt).toLocaleDateString()}
-                                </span>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                                <p className="text-lg sm:text-xl font-bold text-red-500">₹{item.price}</p>
+                                <div className="flex items-center space-x-2">
+                                  <span className="bg-gray-100 px-2 py-1 rounded-full text-xs text-gray-600">
+                                    {item.category}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    Added {new Date(item.addedAt).toLocaleDateString()}
+                                  </span>
+                                </div>
                               </div>
 
-                              <div className="flex items-center space-x-2">
+                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                                 <button
                                   onClick={() => navigate(`/restaurants/${item.restaurantId}`)}
-                                  className="px-4 py-2 border border-gray-300 hover:border-gray-400 text-gray-700 rounded-md font-medium transition-colors duration-200"
+                                  className="px-3 sm:px-4 py-2 border border-gray-300 hover:border-gray-400 text-gray-700 rounded-md text-sm font-medium transition-colors duration-200 text-center"
                                   title="View restaurant"
                                 >
                                   View Menu
@@ -568,11 +570,11 @@ const FavoritesPage = () => {
                                 <button
                                   onClick={() => item.customizations && item.customizations.length > 0 ? setShowCustomization(item) : addToCart(item)}
                                   disabled={addingToCart === item.id}
-                                  className="bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-6 py-2 rounded-md font-semibold transition-all duration-200 transform hover:-translate-y-0.5 disabled:cursor-not-allowed flex items-center space-x-2"
+                                  className="bg-red-500 hover:bg-red-600 disabled:bg-red-300 text-white px-4 sm:px-6 py-2 rounded-md text-sm font-semibold transition-all duration-200 transform hover:-translate-y-0.5 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                                 >
                                   {addingToCart === item.id ? (
                                     <>
-                                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                      <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white"></div>
                                       <span>Adding...</span>
                                     </>
                                   ) : (

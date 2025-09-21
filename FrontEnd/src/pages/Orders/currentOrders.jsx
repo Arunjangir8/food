@@ -178,9 +178,9 @@ const OrdersPage = () => {
     }
 
     return (
-        <div className="min-h-screen w-[100vw] pt-16 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 flex">
+        <div className="min-h-screen w-[100vw] pt-16 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 flex flex-col lg:flex-row">
             {/* Left Sidebar */}
-            <div className="w-80 bg-white shadow-xl border-r border-gray-200 flex flex-col">
+            <div className="w-full lg:w-80 bg-white shadow-xl border-r border-gray-200 flex flex-col lg:h-auto h-auto max-h-screen lg:max-h-none overflow-y-auto lg:overflow-y-visible">
                 {/* Header */}
                 <div className="p-6 border-b border-gray-200">
                     <div className="flex items-center space-x-4 mb-4">
@@ -212,7 +212,7 @@ const OrdersPage = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="flex-1 p-6 overflow-y-auto">
+                <div className="flex-1 p-6 overflow-y-auto lg:block hidden">
                     {/* Status Filter */}
                     <div className="mb-6">
                         <h3 className="text-sm font-semibold text-gray-700 mb-3">Order Status</h3>
@@ -310,7 +310,7 @@ const OrdersPage = () => {
             </div>
 
             {/* Right Content Area */}
-            <div className="flex-1 p-6 overflow-y-auto">
+            <div className="flex-1 p-3 lg:p-6 overflow-y-auto">
 
                 {/* Orders List */}
                 {filteredOrders.length === 0 ? (
@@ -341,11 +341,11 @@ const OrdersPage = () => {
                                 key={order.id}
                                 className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-200 overflow-hidden w-full"
                             >
-                                <div className="p-6">
+                                <div className="p-3 lg:p-6">
                                     {/* Order Header */}
-                                    <div className="flex items-center justify-between mb-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                                                 {order.restaurant.image && order.restaurant.image.startsWith('http') ? (
                                                     <img 
                                                         src={order.restaurant.image} 
@@ -362,56 +362,56 @@ const OrdersPage = () => {
                                                 </div>
                                             </div>
                                             <div>
-                                                <h3 className="text-lg font-bold text-gray-900">
+                                                <h3 className="text-base sm:text-lg font-bold text-gray-900">
                                                     {order.restaurant.name}
                                                 </h3>
-                                                <p className="text-sm text-gray-500">Order #{order.orderNumber}</p>
+                                                <p className="text-xs sm:text-sm text-gray-500">Order #{order.orderNumber}</p>
                                             </div>
                                         </div>
 
-                                        <div className="text-right">
-                                            <p className="text-lg font-bold text-gray-900">
+                                        <div className="text-right sm:text-right text-left">
+                                            <p className="text-base sm:text-lg font-bold text-gray-900">
                                                 ₹{order.total.toFixed(2)}
                                             </p>
-                                            <p className="text-sm text-gray-500">
+                                            <p className="text-xs sm:text-sm text-gray-500">
                                                 {new Date(order.placedAt).toLocaleDateString()}
                                             </p>
                                         </div>
                                     </div>
 
                                     {/* Order Status */}
-                                    <div className="flex items-center justify-between mb-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
                                         <div className="flex items-center space-x-2">
                                             {getStatusIcon(order.status)}
                                             <span
-                                                className={`px-3 py-1 rounded-full text-sm font-semibold ${orderStatuses[order.status].bgColor} ${orderStatuses[order.status].textColor}`}
+                                                className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold ${orderStatuses[order.status].bgColor} ${orderStatuses[order.status].textColor}`}
                                             >
                                                 {orderStatuses[order.status].label}
                                             </span>
                                         </div>
 
-                                        <div className="flex items-center space-x-2 text-sm text-gray-600">
-                                            <HiOutlineClock className="w-4 h-4" />
+                                        <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
+                                            <HiOutlineClock className="w-3 h-3 sm:w-4 sm:h-4" />
                                             <span>{order.actualTime || order.estimatedTime}</span>
                                         </div>
                                     </div>
 
                                     {/* Order Items Preview */}
                                     <div className="mb-4">
-                                        <p className="text-sm text-gray-600 mb-2">
+                                        <p className="text-xs sm:text-sm text-gray-600 mb-2">
                                             {order.items.length} item{order.items.length > 1 ? "s" : ""}:
                                         </p>
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap gap-1 sm:gap-2">
                                             {order.items.slice(0, 3).map((item, index) => (
                                                 <span
                                                     key={index}
-                                                    className="text-sm bg-gray-100 px-3 py-1 rounded-full text-gray-700"
+                                                    className="text-xs sm:text-sm bg-gray-100 px-2 sm:px-3 py-1 rounded-full text-gray-700"
                                                 >
                                                     {item.menuItem.name} x{item.quantity}
                                                 </span>
                                             ))}
                                             {order.items.length > 3 && (
-                                                <span className="text-sm bg-gray-100 px-3 py-1 rounded-full text-gray-500">
+                                                <span className="text-xs sm:text-sm bg-gray-100 px-2 sm:px-3 py-1 rounded-full text-gray-500">
                                                     +{order.items.length - 3} more
                                                 </span>
                                             )}
@@ -419,18 +419,18 @@ const OrdersPage = () => {
                                     </div>
 
                                     {/* Order Actions */}
-                                    <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
+                                    <div className="flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-3">
                                         <button
                                             onClick={() => handleOrderClick(order)}
-                                            className="flex items-center justify-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md font-semibold transition-colors duration-200"
+                                            className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md text-sm font-semibold transition-colors duration-200"
                                         >
-                                            <HiOutlineEye className="w-4 h-4" />
+                                            <HiOutlineEye className="w-3 h-3 sm:w-4 sm:h-4" />
                                             <span>View Details</span>
                                         </button>
 
                                         <button
                                             onClick={() => handleReorder(order)}
-                                            className="px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md font-semibold transition-colors duration-200"
+                                            className="px-3 sm:px-4 py-2 border border-gray-300 hover:bg-gray-50 text-gray-700 rounded-md text-sm font-semibold transition-colors duration-200"
                                         >
                                             Reorder
                                         </button>
@@ -445,26 +445,26 @@ const OrdersPage = () => {
 
             {/* Order Details Modal */}
             {showOrderModal && selectedOrder && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-                <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black bg-opacity-50 backdrop-blur-sm">
+                <div className="bg-white rounded-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
                     {/* Modal Header */}
-                    <div className="sticky top-0 bg-white p-6 border-b border-gray-200 rounded-t-3xl">
+                    <div className="sticky top-0 bg-white p-4 sm:p-6 border-b border-gray-200 rounded-t-3xl">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
-                                <p className="text-sm text-gray-600">#{selectedOrder.orderNumber}</p>
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Order Details</h2>
+                                <p className="text-xs sm:text-sm text-gray-600">#{selectedOrder.orderNumber}</p>
                             </div>
                             <button
                                 onClick={() => setShowOrderModal(false)}
                                 className="p-2 hover:bg-gray-100 rounded-full transition-colors duration-200"
                             >
-                                <HiOutlineX className="w-6 h-6" />
+                                <HiOutlineX className="w-5 h-5 sm:w-6 sm:h-6" />
                             </button>
                         </div>
                     </div>
 
                     {/* Modal Content */}
-                    <div className="p-6 space-y-6">
+                    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                         {/* Restaurant Info */}
                         <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-2xl">
                             <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">

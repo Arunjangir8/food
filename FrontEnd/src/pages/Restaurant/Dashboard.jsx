@@ -78,7 +78,7 @@ const RestaurantDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen lg:pt-24 bg-gray-50 p-8">
+    <div className="min-h-screen pt-24 bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>

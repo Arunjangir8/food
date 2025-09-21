@@ -324,13 +324,13 @@ const Navbar = () => {
 
           {isAuthenticated && (
             <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-red-50 to-orange-50">
-              <div className="flex items-center space-x-3">
+              <button onClick={() => handleNavigation(user?.role === 'CUSTOMER' ? '/profile' : '/restaurant/my-profile')} className="flex items-center justify-start space-x-3">
                 <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
                   <span className="text-white font-semibold text-sm">
                     {user?.name?.charAt(0).toUpperCase() || 'U'}
                   </span>
                 </div>
-                <div>
+                <div className='text-left'>
                   <span className="text-sm font-semibold text-gray-800">
                     {user?.name || 'User'}
                   </span>
@@ -338,7 +338,7 @@ const Navbar = () => {
                     {user?.email || 'user@example.com'}
                   </span>
                 </div>
-              </div>
+              </button>
             </div>
           )}
 

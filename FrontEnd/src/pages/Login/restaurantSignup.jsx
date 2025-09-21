@@ -345,7 +345,7 @@ const RestaurantRegisterPage = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Cuisine Types *
               </label>
-              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto">
                 {cuisineOptions.map((cuisine) => (
                   <label key={cuisine} className="flex items-center p-2 border rounded cursor-pointer hover:bg-gray-50">
                     <input
@@ -361,7 +361,7 @@ const RestaurantRegisterPage = () => {
               {errors.cuisine && <p className="text-sm text-red-500 mt-1">{errors.cuisine}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Restaurant Image
@@ -375,11 +375,11 @@ const RestaurantRegisterPage = () => {
                     id="restaurant-image"
                   />
                   <label htmlFor="restaurant-image" className="cursor-pointer">
-                    <HiOutlinePhotograph className="mx-auto h-8 w-8 text-gray-400" />
+                    <HiOutlinePhotograph className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
                     <p className="text-xs text-gray-500 mt-1">Upload Image</p>
                   </label>
                   {formData.image && (
-                    <p className="text-xs text-green-600 mt-1">{formData.image.name}</p>
+                    <p className="text-xs text-green-600 mt-1 truncate">{formData.image.name}</p>
                   )}
                 </div>
               </div>
@@ -397,11 +397,11 @@ const RestaurantRegisterPage = () => {
                     id="banner-image"
                   />
                   <label htmlFor="banner-image" className="cursor-pointer">
-                    <HiOutlinePhotograph className="mx-auto h-8 w-8 text-gray-400" />
+                    <HiOutlinePhotograph className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
                     <p className="text-xs text-gray-500 mt-1">Upload Banner</p>
                   </label>
                   {formData.banner && (
-                    <p className="text-xs text-green-600 mt-1">{formData.banner.name}</p>
+                    <p className="text-xs text-green-600 mt-1 truncate">{formData.banner.name}</p>
                   )}
                 </div>
               </div>
@@ -432,7 +432,7 @@ const RestaurantRegisterPage = () => {
               {errors.address && <p className="text-sm text-red-500 mt-1">{errors.address}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   City *
@@ -473,7 +473,7 @@ const RestaurantRegisterPage = () => {
       case 4:
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Opening Time *
@@ -518,7 +518,7 @@ const RestaurantRegisterPage = () => {
       case 5:
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Delivery Fee (₹)
@@ -583,25 +583,25 @@ const RestaurantRegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-[100vw] bg-gradient-to-br flex">
+    <div className="min-h-screen w-[100vw] bg-gradient-to-br flex flex-col lg:flex-row">
       {/* Back Button */}
       <button
         onClick={() => navigate('/select-login')}
-        className="fixed top-6 left-6 z-50 flex items-center space-x-2 px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-white transition-all duration-200 shadow-lg"
+        className="fixed top-4 left-4 lg:top-6 lg:left-6 z-50 flex items-center space-x-2 px-3 py-2 lg:px-4 lg:py-2 bg-white/90 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-white transition-all duration-200 shadow-lg text-sm lg:text-base"
       >
-        <HiOutlineArrowLeft className="w-5 h-5" />
-        <span>Back</span>
+        <HiOutlineArrowLeft className="w-4 h-4 lg:w-5 lg:h-5" />
+        <span className="hidden sm:inline">Back</span>
       </button>
       
       {/* Sidebar */}
-      <div className="w-80 bg-white shadow-xl lg:pt-20">
-        <div className="p-6">
-          <h1 className="text-2xl font-bold  mb-2 text-red-600">Restaurant Registration</h1>
-          <p className="text-gray-600 text-sm">Complete all steps to register your restaurant</p>
+      <div className="w-full lg:w-80 bg-white shadow-xl pt-16 lg:pt-20 lg:h-screen overflow-y-auto">
+        <div className="p-4 lg:p-6">
+          <h1 className="text-xl lg:text-2xl font-bold mb-2 text-red-600">Restaurant Registration</h1>
+          <p className="text-gray-600 text-xs lg:text-sm">Complete all steps to register your restaurant</p>
         </div>
 
         {/* Steps */}
-        <div className="px-6 pb-6">
+        <div className="px-4 lg:px-6 pb-4 lg:pb-6">
           {steps.map((step, index) => {
             const StepIcon = step.icon;
             const isActive = currentStep === step.number;
@@ -611,7 +611,7 @@ const RestaurantRegisterPage = () => {
               <div key={step.number} className="relative">
                 <div
                   onClick={() =>{}}
-                  className={`flex items-center p-4 rounded-lg cursor-pointer transition-all duration-200 ${
+                  className={`flex items-center p-3 lg:p-4 rounded-lg cursor-pointer transition-all duration-200 ${
                     isActive 
                       ? 'bg-red-50 border-2 border-red-500' 
                       : isCompleted 
@@ -619,7 +619,7 @@ const RestaurantRegisterPage = () => {
                         : 'hover:bg-gray-50 border-2 border-transparent'
                   }`}
                 >
-                  <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                  <div className={`flex items-center justify-center w-8 h-8 lg:w-10 lg:h-10 rounded-full ${
                     isActive 
                       ? 'bg-red-500 text-white' 
                       : isCompleted 
@@ -627,24 +627,24 @@ const RestaurantRegisterPage = () => {
                         : 'bg-gray-200 text-gray-600'
                   }`}>
                     {isCompleted ? (
-                      <HiOutlineCheck className="w-5 h-5" />
+                      <HiOutlineCheck className="w-4 h-4 lg:w-5 lg:h-5" />
                     ) : (
-                      <StepIcon className="w-5 h-5" />
+                      <StepIcon className="w-4 h-4 lg:w-5 lg:h-5" />
                     )}
                   </div>
-                  <div className="ml-4">
-                    <h3 className={`font-medium ${
+                  <div className="ml-3 lg:ml-4">
+                    <h3 className={`text-sm lg:text-base font-medium ${
                       isActive ? 'text-red-700' : isCompleted ? 'text-green-700' : 'text-gray-900'
                     }`}>
                       {step.title}
                     </h3>
-                    <p className="text-sm text-gray-500">{step.description}</p>
+                    <p className="text-xs lg:text-sm text-gray-500">{step.description}</p>
                   </div>
                 </div>
                 
                 {/* Connector Line */}
                 {index < steps.length - 1 && (
-                  <div className={`w-0.5 h-4 ml-9 ${
+                  <div className={`w-0.5 h-3 lg:h-4 ml-7 lg:ml-9 ${
                     isCompleted ? 'bg-green-500' : 'bg-gray-200'
                   }`} />
                 )}
@@ -655,26 +655,26 @@ const RestaurantRegisterPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-4 lg:p-8">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-red-500 mb-2">
+          <div className="bg-white rounded-2xl shadow-xl p-4 lg:p-8">
+            <div className="mb-6 lg:mb-8">
+              <h2 className="text-xl lg:text-2xl font-bold text-red-500 mb-2">
                 {steps[currentStep - 1].title}
               </h2>
-              <p className="text-gray-600">{steps[currentStep - 1].description}</p>
+              <p className="text-sm lg:text-base text-gray-600">{steps[currentStep - 1].description}</p>
             </div>
 
             <form onSubmit={currentStep === steps.length ? handleSubmit : (e) => e.preventDefault()}>
               {renderStepContent()}
 
               {/* Navigation Buttons */}
-              <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-between mt-6 lg:mt-8 pt-4 lg:pt-6 border-t border-gray-200 gap-3 sm:gap-0">
                 <button
                   type="button"
                   onClick={handlePrevious}
                   disabled={currentStep === 1}
-                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 lg:px-6 py-2 lg:py-3 border border-gray-300 rounded-lg text-gray-700 text-sm lg:text-base font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors order-2 sm:order-1"
                 >
                   Previous
                 </button>
@@ -683,7 +683,7 @@ const RestaurantRegisterPage = () => {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                    className="px-4 lg:px-6 py-2 lg:py-3 bg-red-500 text-white rounded-lg text-sm lg:text-base font-medium hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors order-1 sm:order-2"
                   >
                     Next
                   </button>
@@ -691,7 +691,7 @@ const RestaurantRegisterPage = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="px-6 py-3 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors disabled:opacity-50"
+                    className="px-4 lg:px-6 py-2 lg:py-3 bg-red-500 text-white rounded-lg text-sm lg:text-base font-medium hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors disabled:opacity-50 order-1 sm:order-2"
                   >
                     {isLoading ? 'Registering...' : 'Register Restaurant'}
                   </button>
@@ -700,8 +700,8 @@ const RestaurantRegisterPage = () => {
             </form>
 
             {/* Login Link */}
-            <div className="mt-6 text-center pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-600">
+            <div className="mt-4 lg:mt-6 text-center pt-3 lg:pt-4 border-t border-gray-200">
+              <p className="text-xs lg:text-sm text-gray-600">
                 Already have an account?{' '}
                 <button
                   onClick={()=>navigate('/restaurant/login')}

@@ -165,13 +165,13 @@ const RestaurantProfilePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-6xl mx-auto p-6">
+    <div className="min-h-screen bg-gray-50 pt-16 lg:pt-20">
+      <div className="max-w-6xl mx-auto p-3 lg:p-6">
         
         {/* Header Section */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 lg:mb-8">
           {/* Banner Section */}
-          <div className="relative h-64">
+          <div className="relative h-32 sm:h-48 lg:h-64">
             {restaurantData.banner && (
               <img 
                 src={restaurantData.banner} 
@@ -185,9 +185,9 @@ const RestaurantProfilePage = () => {
             <button
               onClick={() => bannerInputRef.current?.click()}
               disabled={isUploading}
-              className="absolute top-4 right-4 bg-white bg-opacity-20 backdrop-blur-sm text-white p-3 rounded-full hover:bg-opacity-30 transition-all disabled:opacity-50"
+              className="absolute top-2 right-2 lg:top-4 lg:right-4 bg-white bg-opacity-20 backdrop-blur-sm text-white p-2 lg:p-3 rounded-full hover:bg-opacity-30 transition-all disabled:opacity-50"
             >
-              <HiOutlineCamera className="w-5 h-5" />
+              <HiOutlineCamera className="w-4 h-4 lg:w-5 lg:h-5" />
             </button>
             
             <input
@@ -200,12 +200,12 @@ const RestaurantProfilePage = () => {
           </div>
 
           {/* Profile Info */}
-          <div className="relative px-8 pb-8">
-            <div className="flex flex-col md:flex-row items-start md:items-end gap-6 -mt-16">
+          <div className="relative px-4 lg:px-8 pb-4 lg:pb-8">
+            <div className="flex flex-col md:flex-row items-start md:items-end gap-4 lg:gap-6 -mt-8 sm:-mt-12 lg:-mt-16">
               
               {/* Restaurant Logo */}
               <div className="relative">
-                <div className="w-32 h-32 bg-white rounded-2xl shadow-lg overflow-hidden border-4 border-white">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 bg-white rounded-2xl shadow-lg overflow-hidden border-2 lg:border-4 border-white">
                   {restaurantData.image ? (
                     <img 
                       src={restaurantData.image} 
@@ -214,7 +214,7 @@ const RestaurantProfilePage = () => {
                     />
                   ) : (
                     <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                      <HiOutlinePhotograph className="w-12 h-12 text-gray-400" />
+                      <HiOutlinePhotograph className="w-6 h-6 sm:w-8 sm:h-8 lg:w-12 lg:h-12 text-gray-400" />
                     </div>
                   )}
                 </div>
