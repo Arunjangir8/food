@@ -99,7 +99,31 @@ const updateRestaurant = async (req, res) => {
     }
 
     const { id } = req.params;
-    const updateData = req.body;
+    const updateData = { ...req.body };
+
+    // Convert numeric fields to proper types
+    if (updateData.deliveryFee !== undefined) {
+      updateData.deliveryFee = parseFloat(updateData.deliveryFee);
+    }
+    if (updateData.minOrder !== undefined) {
+      updateData.minOrder = parseFloat(updateData.minOrder);
+    }
+    if (updateData.latitude !== undefined && updateData.latitude !== null) {
+      updateData.latitude = parseFloat(updateData.latitude);
+    }
+    if (updateData.longitude !== undefined && updateData.longitude !== null) {
+      updateData.longitude = parseFloat(updateData.longitude);
+    }
+
+    // Remove fields that shouldn't be updated
+    delete updateData.id;
+    delete updateData.ownerId;
+    delete updateData.createdAt;
+    delete updateData.updatedAt;
+    delete updateData.owner;
+    delete updateData.rating;
+    delete updateData.totalRating;
+    delete updateData.ratingCount;
 
     // Check if restaurant belongs to user
     const restaurant = await prisma.restaurant.findUnique({
@@ -139,8 +163,131 @@ const updateRestaurant = async (req, res) => {
   }
 };
 
+const getMyRestaurant = async (req, res) => {
+  try {
+    let restaurant = await prisma.restaurant.findFirst({
+      where: { ownerId: req.user.id },
+      include: {
+        owner: {
+          select: { name: true, email: true }
+        }
+      }
+    });
+
+    // If no restaurant found by ownerId, try to find by email (for backward compatibility)
+    if (!restaurant) {
+      restaurant = await prisma.restaurant.findFirst({
+        where: {
+          owner: {
+            email: req.user.email
+          }
+        },
+        include: {
+          owner: {
+            select: { name: true, email: true }
+          }
+        }
+      });
+      
+      // Update the restaurant to have the correct ownerId
+      if (restaurant) {
+        restaurant = await prisma.restaurant.update({
+          where: { id: restaurant.id },
+          data: { ownerId: req.user.id },
+          include: {
+            owner: {
+              select: { name: true, email: true }
+            }
+          }
+        });
+      }
+    }
+
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'No restaurant found for this account. Please contact support.'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { restaurant }
+    });
+  } catch (error) {
+    console.error('Get my restaurant error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+const uploadImages = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Check if restaurant exists and belongs to user
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id }
+    });
+
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Restaurant not found'
+      });
+    }
+
+    if (restaurant.ownerId !== req.user.id && req.user.role !== 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    const updateData = {};
+    
+    // Handle restaurant logo upload
+    if (req.files && req.files.image && req.files.image[0]) {
+      updateData.image = req.files.image[0].path;
+    }
+    
+    // Handle banner upload
+    if (req.files && req.files.banner && req.files.banner[0]) {
+      updateData.banner = req.files.banner[0].path;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No images provided'
+      });
+    }
+
+    const updatedRestaurant = await prisma.restaurant.update({
+      where: { id },
+      data: updateData
+    });
+
+    res.json({
+      success: true,
+      message: 'Images uploaded successfully',
+      data: { restaurant: updatedRestaurant }
+    });
+  } catch (error) {
+    console.error('Upload images error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
 module.exports = {
   getAllRestaurants,
   getRestaurantById,
-  updateRestaurant
+  updateRestaurant,
+  getMyRestaurant,
+  uploadImages
 };

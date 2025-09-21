@@ -58,15 +58,22 @@ const createMenuItem = async (req, res) => {
       });
     }
 
+    const menuItemData = {
+      categoryId,
+      name,
+      description,
+      price: parseFloat(price),
+      isVeg: typeof isVeg === 'string' ? isVeg === 'true' : isVeg,
+      customizations: typeof customizations === 'string' ? JSON.parse(customizations || '{}') : (customizations || {})
+    };
+
+    // Add image URL if uploaded
+    if (req.file) {
+      menuItemData.image = req.file.path;
+    }
+
     const menuItem = await prisma.menuItem.create({
-      data: {
-        categoryId,
-        name,
-        description,
-        price: parseFloat(price),
-        isVeg,
-        customizations: customizations || {}
-      }
+      data: menuItemData
     });
 
     res.status(201).json({
@@ -86,7 +93,7 @@ const createMenuItem = async (req, res) => {
 const updateMenuItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const updateData = { ...req.body };
 
     // Verify item belongs to user's restaurant
     const menuItem = await prisma.menuItem.findUnique({
@@ -103,6 +110,23 @@ const updateMenuItem = async (req, res) => {
         success: false,
         message: 'Access denied'
       });
+    }
+
+    // Convert data types from FormData strings
+    if (updateData.price) updateData.price = parseFloat(updateData.price);
+    if (updateData.isVeg) updateData.isVeg = updateData.isVeg === 'true';
+    if (updateData.isAvailable) updateData.isAvailable = updateData.isAvailable === 'true';
+    if (updateData.customizations) {
+      try {
+        updateData.customizations = JSON.parse(updateData.customizations);
+      } catch (e) {
+        updateData.customizations = {};
+      }
+    }
+
+    // Add new image URL if uploaded
+    if (req.file) {
+      updateData.image = req.file.path;
     }
 
     const updatedItem = await prisma.menuItem.update({

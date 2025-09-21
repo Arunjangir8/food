@@ -4,6 +4,25 @@ const { hashPassword, comparePassword } = require('../utils/bcrypt');
 const { generateToken } = require('../utils/jwt');
 const { deleteImage } = require('../config/cloudinary');
 
+// Helper function to create default menu categories
+const createDefaultMenuCategories = async (restaurantId) => {
+  const defaultCategories = [
+    { name: 'Appetizers', description: 'Start your meal with these delicious appetizers', sortOrder: 1 },
+    { name: 'Main Course', description: 'Hearty main dishes', sortOrder: 2 },
+    { name: 'Beverages', description: 'Refreshing drinks', sortOrder: 3 },
+    { name: 'Desserts', description: 'Sweet endings', sortOrder: 4 }
+  ];
+
+  for (const category of defaultCategories) {
+    await prisma.menuCategory.create({
+      data: {
+        restaurantId,
+        ...category
+      }
+    });
+  }
+};
+
 // Regular user registration
 const register = async (req, res) => {
   try {
@@ -307,6 +326,9 @@ const registerRestaurant = async (req, res) => {
           ownerId: true
         }
       });
+
+      // Create default menu categories
+      await createDefaultMenuCategories(newRestaurant.id);
 
       return { user: newUser, restaurant: newRestaurant };
     });

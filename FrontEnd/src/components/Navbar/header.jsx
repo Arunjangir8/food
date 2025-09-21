@@ -119,8 +119,7 @@ const Navbar = () => {
       return [
         { name: 'Dashboard', href: '/restaurant/dashboard' },
         { name: 'Orders', href: '/restaurant/orders' },
-        { name: 'Menu', href: '/restaurant/menu' },
-        { name: 'Profile', href: '/restaurant/my-profile' }
+        { name: 'Menu', href: '/restaurant/menu' }
       ];
     }
     return [];

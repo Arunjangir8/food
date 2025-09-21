@@ -254,9 +254,62 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const getRestaurantOrders = async (req, res) => {
+  try {
+    const { status, limit = 50, offset = 0 } = req.query;
+
+    // Get restaurant owned by current user
+    const restaurant = await prisma.restaurant.findFirst({
+      where: { ownerId: req.user.id }
+    });
+
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Restaurant not found'
+      });
+    }
+
+    const where = {
+      restaurantId: restaurant.id,
+      ...(status && { status })
+    };
+
+    const orders = await prisma.order.findMany({
+      where,
+      include: {
+        items: {
+          include: {
+            menuItem: true
+          }
+        },
+        user: {
+          select: { name: true, email: true, phone: true }
+        },
+        address: true
+      },
+      orderBy: { createdAt: 'desc' },
+      take: parseInt(limit),
+      skip: parseInt(offset)
+    });
+
+    res.json({
+      success: true,
+      data: { orders }
+    });
+  } catch (error) {
+    console.error('Get restaurant orders error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
 module.exports = {
   createOrder,
   getUserOrders,
   getOrderById,
-  updateOrderStatus
+  updateOrderStatus,
+  getRestaurantOrders
 };

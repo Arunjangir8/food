@@ -5,7 +5,8 @@ const {
   createOrder,
   getUserOrders,
   getOrderById,
-  updateOrderStatus
+  updateOrderStatus,
+  getRestaurantOrders
 } = require('../controllers/order.controller');
 
 const router = express.Router();
@@ -24,6 +25,10 @@ router.post('/',
 );
 
 router.get('/', getUserOrders);
+router.get('/restaurant/orders',
+  authorize('RESTAURANT_OWNER'),
+  getRestaurantOrders
+);
 router.get('/:id', getOrderById);
 
 // Restaurant owner only

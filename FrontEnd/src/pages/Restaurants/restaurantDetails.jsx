@@ -4,7 +4,7 @@ import { restaurantAPI, menuAPI } from '../../services/api.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { localStorageUtils } from '../../utils/localStorage.js';
 import toast from 'react-hot-toast';
-import { 
+import {
   HiOutlineArrowLeft,
   HiStar,
   HiOutlineClock,
@@ -26,7 +26,7 @@ const RestaurantDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  
+
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [cart, setCart] = useState([]);
   const [favorites, setFavorites] = useState([]);
@@ -41,20 +41,20 @@ const RestaurantDetailsPage = () => {
     const loadLocalData = () => {
       const localCart = localStorageUtils.getCart();
       const localFavorites = localStorageUtils.getFavorites();
-      
+
       setCart(localCart);
       setFavorites(localFavorites);
     };
-    
+
     loadLocalData();
-    
+
     // Listen for storage updates
     const handleCartUpdate = () => setCart(localStorageUtils.getCart());
     const handleFavoritesUpdate = () => setFavorites(localStorageUtils.getFavorites());
-    
+
     window.addEventListener('cartUpdated', handleCartUpdate);
     window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
-    
+
     return () => {
       window.removeEventListener('cartUpdated', handleCartUpdate);
       window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
@@ -217,15 +217,15 @@ const RestaurantDetailsPage = () => {
     const fetchData = async () => {
       try {
         console.log('Fetching restaurant data for ID:', id);
-        
+
         const [restaurantRes, menuRes] = await Promise.all([
           restaurantAPI.getById(id),
           menuAPI.getByRestaurant(id)
         ]);
-        
+
         console.log('Restaurant API response:', restaurantRes.data);
         console.log('Menu API response:', menuRes.data);
-        
+
         const restaurantData = restaurantRes.data.data.restaurant;
         setRestaurant({
           ...restaurantData,
@@ -237,7 +237,7 @@ const RestaurantDetailsPage = () => {
           banner: restaurantData.banner,
           phone: '+91 98765 43210'
         });
-        
+
         // Transform menu categories to flat menu items
         const items = [];
         if (menuRes.data.data.menuCategories && menuRes.data.data.menuCategories.length > 0) {
@@ -257,10 +257,10 @@ const RestaurantDetailsPage = () => {
             }
           });
         }
-        
+
         console.log('Processed menu items:', items);
         setMenuItems(items);
-        
+
       } catch (error) {
         console.error('Failed to fetch data:', error);
         console.error('Error details:', error.response?.data || error.message);
@@ -281,16 +281,16 @@ const RestaurantDetailsPage = () => {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, [id]);
 
   const categories = ['All', ...new Set(menuItems.map(item => item.category))];
 
-  const filteredItems = selectedCategory === 'All' 
-    ? menuItems 
+  const filteredItems = selectedCategory === 'All'
+    ? menuItems
     : menuItems.filter(item => item.category === selectedCategory);
-    
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 flex items-center justify-center">
@@ -301,7 +301,7 @@ const RestaurantDetailsPage = () => {
       </div>
     );
   }
-  
+
   if (!restaurant) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 flex items-center justify-center">
@@ -328,7 +328,7 @@ const RestaurantDetailsPage = () => {
       image: item.image || '🍕',
       quantity: 1
     };
-    
+
     await localStorageUtils.addToCart(cartItem, !!user);
     setShowCustomization(null);
     toast.success(`${item.name} added to cart!`);
@@ -337,7 +337,7 @@ const RestaurantDetailsPage = () => {
   const updateQuantity = (cartItemId, change) => {
     const currentItem = cart.find(item => item.id === cartItemId);
     const newQuantity = Math.max(1, currentItem.quantity + change);
-    
+
     localStorageUtils.updateCartItem(cartItemId, { quantity: newQuantity });
   };
 
@@ -347,7 +347,7 @@ const RestaurantDetailsPage = () => {
 
   const toggleFavorite = async (item) => {
     const existingFavorite = favorites.find(fav => fav.itemId === item.id);
-    
+
     if (existingFavorite) {
       await localStorageUtils.removeFromFavorites(item.id, !!user);
       toast.info(`${item.name} removed from favorites!`);
@@ -365,7 +365,7 @@ const RestaurantDetailsPage = () => {
         popular: item.popular,
         customizations: item.customizations
       };
-      
+
       await localStorageUtils.addToFavorites(favoriteItem, !!user);
       toast.success(`${item.name} added to favorites!`);
     }
@@ -385,7 +385,7 @@ const RestaurantDetailsPage = () => {
     const handleCustomizationChange = (customizationName, option, type) => {
       setSelectedCustomizations(prev => {
         const newCustomizations = { ...prev };
-        
+
         if (type === 'radio') {
           newCustomizations[customizationName] = option;
         } else if (type === 'checkbox') {
@@ -394,14 +394,14 @@ const RestaurantDetailsPage = () => {
           }
           const currentOptions = newCustomizations[customizationName];
           const optionIndex = currentOptions.findIndex(opt => opt.name === option.name);
-          
+
           if (optionIndex > -1) {
             currentOptions.splice(optionIndex, 1);
           } else {
             currentOptions.push(option);
           }
         }
-        
+
         return newCustomizations;
       });
     };
@@ -448,7 +448,7 @@ const RestaurantDetailsPage = () => {
                   {customization.name}
                   {customization.required && <span className="text-red-500 ml-1">*</span>}
                 </h4>
-                
+
                 <div className="space-y-2">
                   {customization.options.map(option => (
                     <label key={option.name} className="flex items-center justify-between p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">
@@ -474,15 +474,14 @@ const RestaurantDetailsPage = () => {
               <div className="flex items-center justify-between mb-4">
                 <span className="text-lg font-semibold">Total: ₹{calculateTotalPrice()}</span>
               </div>
-              
+
               <button
                 onClick={() => onAdd(item, selectedCustomizations)}
                 disabled={!canAddToCart()}
-                className={`w-full py-3 rounded-md font-semibold transition-all duration-200 ${
-                  canAddToCart()
+                className={`w-full py-3 rounded-md font-semibold transition-all duration-200 ${canAddToCart()
                     ? 'bg-red-500 hover:bg-red-600 text-white'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
+                  }`}
               >
                 Add to Cart
               </button>
@@ -512,7 +511,7 @@ const RestaurantDetailsPage = () => {
               >
                 <HiOutlineArrowLeft className="w-6 h-6" />
               </button>
-              
+
               <div className="flex-1">
                 <h1 className="text-xl font-bold text-gray-900">{restaurant.name}</h1>
                 <div className="flex items-center space-x-4 mt-1">
@@ -541,13 +540,13 @@ const RestaurantDetailsPage = () => {
             {/* Restaurant Info */}
             <div className="bg-white rounded-md shadow-xl p-6 mb-6">
               <div className="flex items-center space-x-4">
-                <div 
+                <div
                   className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                   onClick={() => restaurant.image && setShowImageModal(true)}
                 >
-                  {restaurant.image ? (
-                    <img 
-                      src={restaurant.image} 
+                  { restaurant.image !== null && restaurant.image !== undefined ? (
+                    <img
+                      src={restaurant.image}
                       alt={restaurant.name}
                       className="w-full h-full object-cover"
                     />
@@ -601,11 +600,10 @@ const RestaurantDetailsPage = () => {
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${
-                      selectedCategory === category
+                    className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${selectedCategory === category
                         ? 'bg-red-500 text-white shadow-lg'
                         : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md'
-                    }`}
+                      }`}
                   >
                     {category}
                   </button>
@@ -623,67 +621,68 @@ const RestaurantDetailsPage = () => {
                 </div>
               ) : (
                 filteredItems.map(item => (
-                <div key={item.id} className="bg-white rounded-md shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                  <div className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="relative">
-                        <div className="w-20 h-20 bg-gradient-to-br from-orange-200 to-red-200 rounded-md flex items-center justify-center text-3xl">
-                          {item.image}
-                        </div>
-                        
-                        {/* Dietary Badge */}
-                        <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center bg-white ${
-                          item.dietaryType === 'Veg' ? 'border-green-600' : 'border-red-600'
-                        }`}>
-                          <div className={`w-3 h-3 rounded-full ${
-                            item.dietaryType === 'Veg' ? 'bg-green-600' : 'bg-red-600'
-                          }`}></div>
-                        </div>
-                        
-                        {/* Popular Badge */}
-                        {item.popular && (
-                          <div className="absolute -bottom-2 -left-2 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                            Popular
+                  <div key={item.id} className="bg-white rounded-md shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                    <div className="p-6">
+                      <div className="flex items-start space-x-4">
+                        <div className="relative">
+                          <div className="w-20 h-20 bg-gradient-to-br from-orange-200 to-red-200  flex items-center justify-center text-3xl rounded-md">
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover rounded-md"
+                            />
                           </div>
-                        )}
-                      </div>
 
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-1">{item.name}</h3>
-                            <p className="text-gray-600 text-sm mb-2">{item.description}</p>
-                            <p className="text-xl font-bold text-red-500">₹{item.price}</p>
+                          {/* Dietary Badge */}
+                          <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full border-2 flex items-center justify-center bg-white ${item.dietaryType === 'Veg' ? 'border-green-600' : 'border-red-600'
+                            }`}>
+                            <div className={`w-3 h-3 rounded-full ${item.dietaryType === 'Veg' ? 'bg-green-600' : 'bg-red-600'
+                              }`}></div>
                           </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => toggleFavorite(item)}
-                              className={`p-2 rounded-full transition-all duration-200 transform hover:scale-110 ${
-                                isFavorite(item.id) 
-                                  ? 'bg-pink-100 hover:bg-pink-200' 
-                                  : 'hover:bg-gray-100'
-                              }`}
-                            >
-                              {isFavorite(item.id) ? (
-                                <HiHeart className="w-5 h-5 text-pink-500" />
-                              ) : (
-                                <HiOutlineHeart className="w-5 h-5 text-gray-400" />
-                              )}
-                            </button>
-                            
-                            <button
-                              onClick={() => item.customizations.length > 0 ? setShowCustomization(item) : addToCart(item)}
-                              className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md font-semibold transition-all duration-200 transform hover:-translate-y-0.5"
-                            >
-                              Add
-                            </button>
+
+                          {/* Popular Badge */}
+                          {item.popular && (
+                            <div className="absolute -bottom-2 -left-2 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                              Popular
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="text-lg font-bold text-gray-900 mb-1">{item.name}</h3>
+                              <p className="text-gray-600 text-sm mb-2">{item.description}</p>
+                              <p className="text-xl font-bold text-red-500">₹{item.price}</p>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => toggleFavorite(item)}
+                                className={`p-2 rounded-full transition-all duration-200 transform hover:scale-110 ${isFavorite(item.id)
+                                    ? 'bg-pink-100 hover:bg-pink-200'
+                                    : 'hover:bg-gray-100'
+                                  }`}
+                              >
+                                {isFavorite(item.id) ? (
+                                  <HiHeart className="w-5 h-5 text-pink-500" />
+                                ) : (
+                                  <HiOutlineHeart className="w-5 h-5 text-gray-400" />
+                                )}
+                              </button>
+
+                              <button
+                                onClick={() => item.customizations.length > 0 ? setShowCustomization(item) : addToCart(item)}
+                                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-md font-semibold transition-all duration-200 transform hover:-translate-y-0.5"
+                              >
+                                Add
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
                 ))
               )}
             </div>
@@ -695,7 +694,7 @@ const RestaurantDetailsPage = () => {
               <h2 className="text-xl font-bold text-gray-900 flex items-center space-x-2">
                 <span>Your Cart</span>
               </h2>
-              
+
               {cart.length > 0 && (
                 <button
                   onClick={() => navigate('/cart')}
@@ -720,7 +719,7 @@ const RestaurantDetailsPage = () => {
                     <div key={cartItem.id} className="border border-gray-200 rounded-md p-4 bg-gray-50">
                       <div className="flex items-start space-x-3">
                         <div className="text-2xl">{cartItem.image}</div>
-                        
+
                         <div className="flex-1">
                           <div className="flex items-start justify-between mb-2">
                             <h4 className="font-semibold text-gray-900 text-sm">{cartItem.name}</h4>
@@ -732,14 +731,14 @@ const RestaurantDetailsPage = () => {
                               <HiTrash className="w-4 h-4" />
                             </button>
                           </div>
-                          
+
                           {/* Customizations Display */}
                           {Object.keys(cartItem.customizations || {}).length > 0 && (
                             <div className="mb-2">
                               {Object.entries(cartItem.customizations).map(([key, value]) => (
                                 <div key={key} className="text-xs text-gray-600">
                                   <span className="font-medium">{key}:</span> {
-                                    Array.isArray(value) 
+                                    Array.isArray(value)
                                       ? value.map(v => v.name).join(', ')
                                       : value.name
                                   }
@@ -747,7 +746,7 @@ const RestaurantDetailsPage = () => {
                               ))}
                             </div>
                           )}
-                          
+
                           <div className="flex items-center justify-between">
                             {/* Quantity Controls */}
                             <div className="flex items-center space-x-2 bg-white rounded-md border">
@@ -758,11 +757,11 @@ const RestaurantDetailsPage = () => {
                               >
                                 <HiMinus className="w-4 h-4" />
                               </button>
-                              
+
                               <span className="px-3 py-1 font-medium text-sm min-w-[2rem] text-center">
                                 {cartItem.quantity}
                               </span>
-                              
+
                               <button
                                 onClick={() => updateQuantity(cartItem.id, 1)}
                                 className="p-1 hover:bg-gray-100 rounded-r-m transition-colors duration-200"
@@ -770,7 +769,7 @@ const RestaurantDetailsPage = () => {
                                 <HiPlus className="w-4 h-4" />
                               </button>
                             </div>
-                            
+
                             <span className="font-bold text-gray-900 text-sm">
                               ₹{cartItem.totalPrice * cartItem.quantity}
                             </span>
@@ -794,7 +793,7 @@ const RestaurantDetailsPage = () => {
                   >
                     Proceed to Checkout
                   </button>
-                  
+
                   {cart.length > 0 && (
                     <button
                       onClick={async () => {
@@ -826,8 +825,8 @@ const RestaurantDetailsPage = () => {
       {showImageModal && restaurant.image && (
         <div className="fixed inset-0 w-[100vw] bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onClick={() => setShowImageModal(false)}>
           <div className="relative max-w-4xl max-h-[90vh]">
-            <img 
-              src={restaurant.image} 
+            <img
+              src={restaurant.image}
               alt={restaurant.name}
               className="w-full h-full object-contain rounded-md"
             />

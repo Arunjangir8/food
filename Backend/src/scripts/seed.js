@@ -69,6 +69,33 @@ async function main() {
     }
   });
 
+  const mainsCategory = await prisma.menuCategory.create({
+    data: {
+      restaurantId: restaurant.id,
+      name: 'Main Course',
+      description: 'Hearty main dishes',
+      sortOrder: 3
+    }
+  });
+
+  const beveragesCategory = await prisma.menuCategory.create({
+    data: {
+      restaurantId: restaurant.id,
+      name: 'Beverages',
+      description: 'Refreshing drinks',
+      sortOrder: 4
+    }
+  });
+
+  const dessertsCategory = await prisma.menuCategory.create({
+    data: {
+      restaurantId: restaurant.id,
+      name: 'Desserts',
+      description: 'Sweet endings',
+      sortOrder: 5
+    }
+  });
+
   // Create menu items
   await prisma.menuItem.create({
     data: {

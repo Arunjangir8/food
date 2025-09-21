@@ -44,9 +44,35 @@ const bannerStorage = new CloudinaryStorage({
   }
 });
 
+// Combined storage for both image and banner
+const combinedStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: (req, file) => {
+    if (file.fieldname === 'banner') {
+      return {
+        folder: 'restaurants/banners',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [
+          { width: 1200, height: 400, crop: 'limit', quality: 'auto:good' }
+        ],
+        public_id: `banner_${Date.now()}_${Math.round(Math.random() * 1E9)}`
+      };
+    } else {
+      return {
+        folder: 'restaurants',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+        transformation: [
+          { width: 800, height: 600, crop: 'limit', quality: 'auto:good' }
+        ],
+        public_id: `${file.fieldname}_${Date.now()}_${Math.round(Math.random() * 1E9)}`
+      };
+    }
+  }
+});
+
 // Multer upload configuration
 const uploadRestaurantImages = multer({
-  storage: restaurantStorage,
+  storage: combinedStorage,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
     files: 2 // max 2 files
@@ -91,6 +117,38 @@ const uploadAvatar = multer({
   }
 });
 
+// Menu item images storage
+const menuItemStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'menu-items',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [
+      { width: 600, height: 400, crop: 'limit', quality: 'auto:good' }
+    ],
+    public_id: (req, file) => {
+      const timestamp = Date.now();
+      const random = Math.round(Math.random() * 1E9);
+      return `menu_item_${timestamp}_${random}`;
+    }
+  }
+});
+
+// Menu item upload configuration
+const uploadMenuItemImage = multer({
+  storage: menuItemStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+    files: 1 // max 1 file
+  },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Only image files are allowed'));
+    }
+    cb(null, true);
+  }
+});
+
 // Delete image from Cloudinary
 const deleteImage = async (publicId) => {
   try {
@@ -105,5 +163,6 @@ module.exports = {
   cloudinary,
   uploadRestaurantImages,
   uploadAvatar,
+  uploadMenuItemImage,
   deleteImage
 };

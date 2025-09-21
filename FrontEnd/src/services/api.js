@@ -47,19 +47,35 @@ export const restaurantAPI = {
   getAll: (params) => api.get('/restaurants', { params }),
   getById: (id) => api.get(`/restaurants/${id}`),
   update: (id, data) => api.put(`/restaurants/${id}`, data),
+  getMyRestaurant: () => api.get('/restaurants/my-restaurant'),
+  uploadImages: (id, formData) => api.post(`/restaurants/${id}/upload-images`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
 };
 
 // Menu API
 export const menuAPI = {
   getByRestaurant: (restaurantId) => api.get(`/menu/restaurant/${restaurantId}`),
-  createItem: (data) => api.post('/menu/items', data),
-  updateItem: (id, data) => api.put(`/menu/items/${id}`, data),
+  createItem: (data) => {
+    const config = data instanceof FormData 
+      ? { headers: { 'Content-Type': 'multipart/form-data' } }
+      : {};
+    return api.post('/menu/items', data, config);
+  },
+  updateItem: (id, data) => {
+    const config = data instanceof FormData 
+      ? { headers: { 'Content-Type': 'multipart/form-data' } }
+      : {};
+    return api.put(`/menu/items/${id}`, data, config);
+  },
+  deleteItem: (id) => api.delete(`/menu/items/${id}`),
 };
 
 // Order API
 export const orderAPI = {
   create: (orderData) => api.post('/orders', orderData),
   getUserOrders: (params) => api.get('/orders', { params }),
+  getRestaurantOrders: (params) => api.get('/orders/restaurant/orders', { params }),
   getById: (id) => api.get(`/orders/${id}`),
   updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
 };
