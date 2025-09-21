@@ -132,7 +132,7 @@ const RestaurantsPage = () => {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br lg:pt-20 from-red-50 via-orange-50 to-yellow-50">
+        <div className="min-h-screen pt-16 bg-gradient-to-br lg:pt-20 from-red-50 via-orange-50 to-yellow-50">
             {/* Background Decorations */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute top-20 right-20 w-96 h-96 bg-red-100 rounded-full mix-blend-multiply filter blur-xl opacity-40 animate-pulse"></div>

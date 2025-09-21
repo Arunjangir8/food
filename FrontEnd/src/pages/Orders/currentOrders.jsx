@@ -345,7 +345,22 @@ const OrdersPage = () => {
                                     {/* Order Header */}
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center space-x-3">
-                                            <div className="text-2xl">{order.restaurant.image}</div>
+                                            <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                                                {order.restaurant.image && order.restaurant.image.startsWith('http') ? (
+                                                    <img 
+                                                        src={order.restaurant.image} 
+                                                        alt={order.restaurant.name}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => {
+                                                            e.target.style.display = 'none';
+                                                            e.target.nextSibling.style.display = 'flex';
+                                                        }}
+                                                    />
+                                                ) : null}
+                                                <div className="w-full h-full flex items-center justify-center text-xl" style={{display: order.restaurant.image && order.restaurant.image.startsWith('http') ? 'none' : 'flex'}}>
+                                                    {order.restaurant.image && !order.restaurant.image.startsWith('http') ? order.restaurant.image : '🍕'}
+                                                </div>
+                                            </div>
                                             <div>
                                                 <h3 className="text-lg font-bold text-gray-900">
                                                     {order.restaurant.name}
@@ -452,7 +467,22 @@ const OrdersPage = () => {
                     <div className="p-6 space-y-6">
                         {/* Restaurant Info */}
                         <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-2xl">
-                            <div className="text-3xl">{selectedOrder.restaurant.image}</div>
+                            <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                                {selectedOrder.restaurant.image && selectedOrder.restaurant.image.startsWith('http') ? (
+                                    <img 
+                                        src={selectedOrder.restaurant.image} 
+                                        alt={selectedOrder.restaurant.name}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                ) : null}
+                                <div className="w-full h-full flex items-center justify-center text-2xl" style={{display: selectedOrder.restaurant.image && selectedOrder.restaurant.image.startsWith('http') ? 'none' : 'flex'}}>
+                                    {selectedOrder.restaurant.image && !selectedOrder.restaurant.image.startsWith('http') ? selectedOrder.restaurant.image : '🍕'}
+                                </div>
+                            </div>
                             <div>
                                 <h3 className="text-lg font-bold text-gray-900">{selectedOrder.restaurant.name}</h3>
                                 <p className="text-sm text-gray-600">{selectedOrder.restaurant.cuisine.join(', ')}</p>
@@ -489,7 +519,22 @@ const OrdersPage = () => {
                                 {selectedOrder.items.map((item, index) => (
                                     <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                                         <div className="flex items-center space-x-3">
-                                            <div className="text-xl">{item.menuItem.image}</div>
+                                            <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                                                {item.menuItem.image && item.menuItem.image.startsWith('http') ? (
+                                                    <img 
+                                                        src={item.menuItem.image} 
+                                                        alt={item.menuItem.name}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => {
+                                                            e.target.style.display = 'none';
+                                                            e.target.nextSibling.style.display = 'flex';
+                                                        }}
+                                                    />
+                                                ) : null}
+                                                <div className="w-full h-full flex items-center justify-center text-lg" style={{display: item.menuItem.image && item.menuItem.image.startsWith('http') ? 'none' : 'flex'}}>
+                                                    {item.menuItem.image && !item.menuItem.image.startsWith('http') ? item.menuItem.image : '🍕'}
+                                                </div>
+                                            </div>
                                             <div>
                                                 <h5 className="font-medium text-gray-900">{item.menuItem.name}</h5>
                                                 <p className="text-sm text-gray-600">Qty: {item.quantity}</p>

@@ -7,6 +7,9 @@ import {
   HiOutlineClock,
   HiOutlineTruck
 } from 'react-icons/hi';
+import image1 from '../../assets/image1.jpg';
+import image2 from '../../assets/image2.jpg';
+import image3 from '../../assets/image3.jpg';
 
 const Hero = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -108,7 +111,11 @@ const Hero = () => {
                 {/* Primary Food Image */}
                 <div className="relative z-10 bg-white rounded-3xl shadow-2xl p-6 transform rotate-3 hover:rotate-0 transition-transform duration-500">
                   <div className="w-full h-80 bg-gradient-to-br from-orange-200 to-red-200 rounded-2xl flex items-center justify-center">
-                    <div className="text-6xl">🍕</div>
+                    <img 
+                        src={image1}
+                        alt="Delicious Food"
+                        className="w-full h-full object-cover rounded-md"
+                      />
                   </div>
                   
                   {/* Rating Badge */}
@@ -126,12 +133,20 @@ const Hero = () => {
                 {/* Secondary Food Images */}
                 <div className="absolute -top-8 -right-8 z-0 bg-white rounded-2xl shadow-xl p-4 transform -rotate-12 hover:rotate-0 transition-transform duration-500">
                   <div className="w-24 h-24 bg-gradient-to-br from-yellow-200 to-orange-200 rounded-xl flex items-center justify-center">
-                    <div className="text-2xl">🍔</div>
+                     <img 
+                        src={image2}
+                        alt="Delicious Food"
+                        className="w-full h-full object-cover rounded-md"
+                      />
                   </div>
                 </div>
                 <div className="absolute -bottom-8 -left-8 z-0 bg-white rounded-2xl shadow-xl p-4 transform rotate-12 hover:rotate-0 transition-transform duration-500">
                   <div className="w-24 h-24 bg-gradient-to-br from-purple-200 to-pink-200 rounded-xl flex items-center justify-center">
-                    <div className="text-2xl">🍰</div>
+                     <img 
+                        src={image3}
+                        alt="Delicious Food"
+                        className="w-full h-full object-cover rounded-md"
+                      />
                   </div>
                 </div>
 

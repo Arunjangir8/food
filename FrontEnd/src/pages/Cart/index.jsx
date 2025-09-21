@@ -32,19 +32,50 @@ const CartPage = () => {
   const [discount, setDiscount] = useState(0);
   const [deliveryInfo, setDeliveryInfo] = useState({
     fee: 25,
-    estimatedTime: '25-35 mins',
-    address: '123 Main Street, Apartment 4B, Delhi - 110001'
+    estimatedTime: '25-35 mins'
   });
 
-  // Mock default address for testing
-  const mockAddress = {
-    id: 'mock-address-1',
-    type: 'Home',
-    address: '123 Main Street, Apartment 4B',
-    city: 'Delhi',
-    pincode: '110001',
-    isDefault: true
-  };
+  const [userAddress, setUserAddress] = useState(null);
+
+  // Load user's default address
+  useEffect(() => {
+    const loadUserAddress = async () => {
+      if (user) {
+        try {
+          const response = await userAPI.getProfile();
+          const userProfile = response.data.data.user;
+          const defaultAddress = userProfile?.addresses?.find(addr => addr.isDefault) || userProfile?.addresses?.[0];
+          
+          if (defaultAddress) {
+            setUserAddress(defaultAddress);
+          } else {
+            // Fallback address if no address found
+            setUserAddress({
+              id: 'default',
+              type: 'Home',
+              address: '123 Main Street, Apartment 4B',
+              city: 'Delhi',
+              pincode: '110001',
+              isDefault: true
+            });
+          }
+        } catch (error) {
+          console.error('Error loading user address:', error);
+          // Fallback address on error
+          setUserAddress({
+            id: 'default',
+            type: 'Home', 
+            address: '123 Main Street, Apartment 4B',
+            city: 'Delhi',
+            pincode: '110001',
+            isDefault: true
+          });
+        }
+      }
+    };
+
+    loadUserAddress();
+  }, [user]);
 
   // Mock promo codes
   const promoCodes = {
@@ -72,8 +103,7 @@ const CartPage = () => {
             const restaurant = dbCart[0].menuItem.category.restaurant;
             setDeliveryInfo({
               fee: restaurant.deliveryFee,
-              estimatedTime: restaurant.deliveryTime,
-              address: restaurant.name + ", " + restaurant.address + ", " + restaurant.city + " - " + restaurant.pincode
+              estimatedTime: restaurant.deliveryTime
             });
             
             // Convert API format to local format
@@ -174,21 +204,12 @@ const CartPage = () => {
         return;
       }
 
-      let defaultAddress = mockAddress; // Use mock address as fallback
-      
-      try {
-        // Try to get user profile with addresses
-        const profileResponse = await userAPI.getProfile();
-        const userProfile = profileResponse.data.data.user;
-        
-        // Get user's default address if available
-        const userAddress = userProfile?.addresses?.find(addr => addr.isDefault) || userProfile?.addresses?.[0];
-        if (userAddress) {
-          defaultAddress = userAddress;
-        }
-      } catch (error) {
-        console.log('Using mock address for testing:', error.message);
+      if (!userAddress) {
+        toast.error('Please add a delivery address first');
+        return;
       }
+      
+      const defaultAddress = userAddress;
       
       // Group cart items by restaurant
       const restaurantGroups = cart.reduce((groups, item) => {
@@ -333,23 +354,29 @@ const CartPage = () => {
             {/* Left Side - Cart Items */}
             <div className="flex-1">
               {/* Delivery Address */}
-              <div className="bg-white rounded-md shadow-lg p-6 mb-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center space-x-2">
-                  <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
-                  <span>Delivery Address</span>
-                </h3>
-                <p className="text-gray-600 mb-2">{deliveryInfo.address}</p>
-                <div className="flex items-center space-x-4 text-sm text-gray-500">
-                  <div className="flex items-center space-x-1">
-                    <HiOutlineClock className="w-4 h-4" />
-                    <span>{deliveryInfo.estimatedTime}</span>
+              {userAddress && (
+                <div className="bg-white rounded-md shadow-lg p-6 mb-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center space-x-2">
+                    <HiOutlineLocationMarker className="w-5 h-5 text-red-500" />
+                    <span>Delivery Address</span>
+                  </h3>
+                  <div className="mb-3">
+                    <p className="font-medium text-gray-900">{userAddress.type}</p>
+                    <p className="text-gray-600">{userAddress.address}</p>
+                    <p className="text-gray-600">{userAddress.city} - {userAddress.pincode}</p>
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <HiOutlineTruck className="w-4 h-4" />
-                    <span>₹{deliveryInfo.fee} delivery fee</span>
+                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    <div className="flex items-center space-x-1">
+                      <HiOutlineClock className="w-4 h-4" />
+                      <span>{deliveryInfo.estimatedTime}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <HiOutlineTruck className="w-4 h-4" />
+                      <span>₹{deliveryInfo.fee} delivery fee</span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Cart Items grouped by restaurant */}
               {Object.entries(groupedCart).map(([restaurantId, restaurant]) => (
@@ -362,8 +389,21 @@ const CartPage = () => {
                     <div className="space-y-4">
                       {restaurant.items.map(cartItem => (
                         <div key={cartItem.id} className="flex items-start space-x-4 p-4 border border-gray-200 rounded-md">
-                          <div className="w-16 h-16 bg-gradient-to-br from-orange-200 to-red-200 rounded-md flex items-center justify-center text-2xl">
-                            {cartItem.image}
+                          <div className="w-16 h-16 bg-gradient-to-br from-orange-200 to-red-200 rounded-md flex items-center justify-center text-2xl overflow-hidden">
+                            {cartItem.image && cartItem.image.startsWith('http') ? (
+                              <img 
+                                src={cartItem.image} 
+                                alt={cartItem.name}
+                                className="w-full h-full object-cover rounded-md"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            <div className="w-full h-full flex items-center justify-center text-2xl" style={{display: cartItem.image && cartItem.image.startsWith('http') ? 'none' : 'flex'}}>
+                              {cartItem.image && !cartItem.image.startsWith('http') ? cartItem.image : '🍕'}
+                            </div>
                           </div>
                           
                           <div className="flex-1">

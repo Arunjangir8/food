@@ -744,7 +744,22 @@ const RestaurantDetailsPage = () => {
                   {cart.map(cartItem => (
                     <div key={cartItem.id} className="border border-gray-200 rounded-md p-4 bg-gray-50">
                       <div className="flex items-start space-x-3">
-                        <div className="text-2xl">{cartItem.image}</div>
+                        <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                          {cartItem.image && cartItem.image.startsWith('http') ? (
+                            <img 
+                              src={cartItem.image} 
+                              alt={cartItem.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div className="w-full h-full flex items-center justify-center text-xl" style={{display: cartItem.image && cartItem.image.startsWith('http') ? 'none' : 'flex'}}>
+                            {cartItem.image && !cartItem.image.startsWith('http') ? cartItem.image : '🍕'}
+                          </div>
+                        </div>
 
                         <div className="flex-1">
                           <div className="flex items-start justify-between mb-2">

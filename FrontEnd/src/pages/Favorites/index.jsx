@@ -261,7 +261,22 @@ const FavoritesPage = () => {
             </div>
 
             <div className="mb-6">
-              <div className="text-4xl mb-2 text-center">{item.image}</div>
+              <div className="w-20 h-20 mx-auto mb-4 rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
+                {item.image && item.image.startsWith('http') ? (
+                  <img 
+                    src={item.image} 
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className="w-full h-full flex items-center justify-center text-3xl" style={{display: item.image && item.image.startsWith('http') ? 'none' : 'flex'}}>
+                  {item.image && !item.image.startsWith('http') ? item.image : '🍕'}
+                </div>
+              </div>
               <p className="text-gray-600 text-sm">{item.description}</p>
               <p className="text-lg font-semibold text-gray-900 mt-2">₹{item.price}</p>
             </div>
@@ -474,8 +489,21 @@ const FavoritesPage = () => {
                   <div className="p-6">
                     <div className="flex items-start space-x-4">
                       <div className="relative">
-                        <div className="w-20 h-20 bg-gradient-to-br from-orange-200 to-red-200 rounded-xl flex items-center justify-center text-3xl">
-                          {item.image}
+                        <div className="w-20 h-20 bg-gradient-to-br from-orange-200 to-red-200 rounded-xl overflow-hidden flex items-center justify-center">
+                          {item.image && item.image.startsWith('http') ? (
+                            <img 
+                              src={item.image} 
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling.style.display = 'flex';
+                              }}
+                            />
+                          ) : null}
+                          <div className="w-full h-full flex items-center justify-center text-3xl" style={{display: item.image && item.image.startsWith('http') ? 'none' : 'flex'}}>
+                            {item.image && !item.image.startsWith('http') ? item.image : '🍕'}
+                          </div>
                         </div>
 
                         {/* Dietary Badge */}

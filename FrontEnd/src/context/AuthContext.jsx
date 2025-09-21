@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { userAPI } from '../services/api.js';
 
 const AuthContext = createContext();
 
@@ -11,28 +12,35 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-
-    const savedUser = localStorage.getItem('userProfile');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
-  
+  const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => {
     return localStorage.getItem('token') || null;
   });
-  
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchUserProfile = async () => {
+      const savedToken = localStorage.getItem('token');
+      
+      if (savedToken) {
+        setToken(savedToken);
+        try {
+          const response = await userAPI.getProfile();
+          const userData = response.data.data.user;
+          setUser(userData);
+          localStorage.setItem('userProfile', JSON.stringify(userData));
+        } catch (error) {
+          console.error('Failed to fetch user profile:', error);
+          const savedUser = localStorage.getItem('userProfile');
+          if (savedUser) {
+            setUser(JSON.parse(savedUser));
+          }
+        }
+      }
+      setLoading(false);
+    };
 
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('userProfile');
-    
-    if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    fetchUserProfile();
   }, []);
 
   const login = (userData, authToken) => {

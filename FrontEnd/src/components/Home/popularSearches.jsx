@@ -48,7 +48,7 @@ const PopularSearches = () => {
       {
         id: 3,
         name: 'Biryani',
-        image: 'https://images.unsplash.com/photo-1563379091339-03246963d51b?w=300&h=200&fit=crop',
+        image: 'https://res.cloudinary.com/dt9lrb79o/image/upload/v1758461192/menu-items/menu_item_1758461192285_830764051.jpg',
         description: 'Aromatic rice dish with spices',
         restaurants: 52,
         avgDelivery: '25-30 mins',
@@ -90,7 +90,7 @@ const PopularSearches = () => {
       {
         id: 1,
         name: 'Chole Bhature',
-        image: 'https://images.unsplash.com/photo-1626132647523-66f0bf380027?w=300&h=200&fit=crop',
+        image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=300&h=200&fit=crop',
         description: 'Delhi\'s favorite breakfast',
         restaurants: 42,
         avgDelivery: '18-22 mins',
@@ -323,10 +323,10 @@ const PopularSearches = () => {
         {/* Call to Action */}
         <div className="text-center">
           <button 
-            onClick={() => navigate('/home#cuisines')}
+            onClick={() => navigate('/restaurants')}
             className="px-8 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-md transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-2 inline-flex items-center"
           >
-            <span className="text-lg">Explore All Cuisines</span>
+            <span className="text-lg">Explore All Restaurants</span>
             <HiChevronRight className="w-6 h-6" />
           </button>
         </div>
