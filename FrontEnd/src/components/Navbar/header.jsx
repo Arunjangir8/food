@@ -25,7 +25,7 @@ const Navbar = () => {
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
-  // Handle scroll effect
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -34,7 +34,7 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu when screen size changes
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -45,7 +45,7 @@ const Navbar = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Close location dropdown when clicking outside
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showLocationDropdown && !event.target.closest('.location-dropdown')) {
@@ -56,7 +56,7 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showLocationDropdown]);
 
-  // Load cart and favorites count from localStorage
+
   useEffect(() => {
     const updateCounts = () => {
       const cart = localStorageUtils.getCart();
@@ -69,7 +69,7 @@ const Navbar = () => {
 
     updateCounts();
 
-    // Listen for storage updates
+
     const handleCartUpdate = () => {
       const cart = localStorageUtils.getCart();
       const totalCartItems = cart.reduce((total, item) => total + item.quantity, 0);
@@ -105,7 +105,7 @@ const Navbar = () => {
     navigate('/select-login');
   };
 
-  // Navigation links based on user role
+
   const getNavLinks = () => {
     if (!isAuthenticated) return [];
 
@@ -129,17 +129,17 @@ const Navbar = () => {
 
   return (
     <div>
-      {/* Main Navbar */}
+  
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 mb-8 ${isScrolled
           ? 'bg-white/95 backdrop-blur-md shadow-lg'
           : 'bg-white'
         }`}>
 
-        {/* Container with max width for large screens */}
+
         <div className="max-w-[100%] mx-auto px-6 lg:px-12 xl:px-16">
           <div className="flex justify-between items-center h-16 lg:h-20">
 
-            {/* Logo Section */}
+
             <div className="flex-shrink-0 flex items-center">
               <button
                 onClick={() => handleNavigation('/')}
@@ -152,9 +152,9 @@ const Navbar = () => {
             </div>
 
 
-            {/* Desktop Navigation Links */}
+
             <div className="hidden lg:flex items-center space-x-8">
-              {/* Desktop Center Section - Location */}
+
               <div className="hidden md:flex items-center justify-center">
                 <div className="relative location-dropdown">
                   <div
@@ -171,7 +171,7 @@ const Navbar = () => {
                     </div>
                   </div>
 
-                  {/* Dropdown */}
+
                   {showLocationDropdown && (
                     <div className="absolute top-full left-0 mt-2 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-50 min-w-[200px]">
                       {locations.map(location => (
@@ -206,10 +206,10 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* Right Side Actions */}
+
             <div className="flex items-center space-x-2 lg:space-x-4">
 
-              {/* Desktop Action Buttons */}
+
               <div className="hidden md:flex items-center space-x-3">
                 {isAuthenticated && (
                   <>
@@ -249,7 +249,7 @@ const Navbar = () => {
                   </>
                 )}
 
-                {/* User Profile / Login Section */}
+
                 {isAuthenticated ? (
                   <div className="flex items-center space-x-3">
                     <button
@@ -285,7 +285,7 @@ const Navbar = () => {
                 )}
               </div>
 
-              {/* Mobile Menu Button */}
+
               <div className="flex lg:hidden">
                 <button
                   onClick={toggleMenu}
@@ -309,7 +309,7 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
+
       <div className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
         }`}>
         <div
@@ -317,11 +317,11 @@ const Navbar = () => {
           onClick={toggleMenu}
         ></div>
 
-        {/* Mobile Menu Panel */}
+
         <div className={`absolute top-16 left-0 right-0 bg-white shadow-2xl transition-all duration-300 transform ${isOpen ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0'
           }`}>
 
-          {/* User Info - Mobile */}
+
           {isAuthenticated && (
             <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-red-50 to-orange-50">
               <div className="flex items-center space-x-3">
@@ -342,7 +342,7 @@ const Navbar = () => {
             </div>
           )}
 
-          {/* Location - Mobile */}
+
           <div className="p-6 border-b border-gray-100 bg-gray-50">
             <div className="relative location-dropdown">
               <div
@@ -359,7 +359,7 @@ const Navbar = () => {
                 </div>
               </div>
 
-              {/* Mobile Dropdown */}
+
               {showLocationDropdown && (
                 <div className="absolute top-full left-0 mt-2 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-50 w-full">
                   {locations.map(location => (
@@ -380,7 +380,7 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Navigation Links - Mobile */}
+
           <div className="py-2">
             {navLinks.map((link, index) => (
               <button
@@ -398,7 +398,7 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Action Buttons - Mobile */}
+
           <div className="p-6 border-t border-gray-100 space-y-3 bg-gray-50">
             {isAuthenticated ? (
               <>

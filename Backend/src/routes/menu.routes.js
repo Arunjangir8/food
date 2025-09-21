@@ -11,10 +11,10 @@ const {
 
 const router = express.Router();
 
-// Public routes
+
 router.get('/restaurant/:restaurantId', getMenuByRestaurant);
 
-// Protected routes
+
 router.post('/items',
   authenticate,
   authorize('RESTAURANT_OWNER'),
@@ -74,7 +74,7 @@ router.delete('/items/:id',
     try {
       const { id } = req.params;
 
-      // Verify item belongs to user's restaurant
+
       const menuItem = await prisma.menuItem.findUnique({
         where: { id },
         include: {

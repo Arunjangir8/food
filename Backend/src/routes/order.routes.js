@@ -11,7 +11,7 @@ const {
 
 const router = express.Router();
 
-// All routes require authentication
+
 router.use(authenticate);
 
 router.post('/',
@@ -31,7 +31,7 @@ router.get('/restaurant/orders',
 );
 router.get('/:id', getOrderById);
 
-// Restaurant owner only
+
 router.put('/:id/status',
   authorize('RESTAURANT_OWNER'),
   [

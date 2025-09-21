@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seeding...');
 
-  // Create sample users
+
   const hashedPassword = await hashPassword('password123');
 
   const customer = await prisma.user.create({
@@ -29,7 +29,7 @@ async function main() {
     }
   });
 
-  // Create sample restaurant
+
   const restaurant = await prisma.restaurant.create({
     data: {
       name: 'Pizza Palace',
@@ -50,7 +50,7 @@ async function main() {
     }
   });
 
-  // Create menu categories
+
   const pizzaCategory = await prisma.menuCategory.create({
     data: {
       restaurantId: restaurant.id,
@@ -96,7 +96,7 @@ async function main() {
     }
   });
 
-  // Create menu items
+
   await prisma.menuItem.create({
     data: {
       categoryId: pizzaCategory.id,
@@ -151,7 +151,7 @@ async function main() {
     }
   });
 
-  // Create sample address
+
   await prisma.address.create({
     data: {
       userId: customer.id,

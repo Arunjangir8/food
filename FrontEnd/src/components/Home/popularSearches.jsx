@@ -299,7 +299,7 @@ const PopularSearches = () => {
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-1">
                           <HiStar className="w-4 h-4 text-yellow-500 fill-current" />
-                          <span className="font-semibold text-gray-800">{category.rating}</span>
+                          <span className="font-semibold text-gray-800">{parseFloat(category.rating).toFixed(1)}</span>
                         </div>
                         
                         <div className="flex items-center space-x-1 text-gray-500">

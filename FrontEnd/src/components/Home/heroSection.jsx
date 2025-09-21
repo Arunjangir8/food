@@ -114,7 +114,7 @@ const Hero = () => {
                   {/* Rating Badge */}
                   <div className="absolute -top-4 -left-4 bg-green-500 text-white px-4 py-2 rounded-full flex items-center space-x-1 shadow-lg">
                     <HiStar className="w-4 h-4 fill-current" />
-                    <span className="font-semibold text-sm">4.8</span>
+                    <span className="font-semibold text-sm">{parseFloat(4.8).toFixed(1)}</span>
                   </div>
                   {/* Delivery Time Badge */}
                   <div className="absolute -bottom-4 -right-4 bg-white text-gray-800 px-4 py-2 rounded-full flex items-center space-x-2 shadow-lg border border-gray-100">

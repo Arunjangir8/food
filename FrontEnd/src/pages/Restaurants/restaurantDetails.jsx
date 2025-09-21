@@ -479,8 +479,8 @@ const RestaurantDetailsPage = () => {
                 onClick={() => onAdd(item, selectedCustomizations)}
                 disabled={!canAddToCart()}
                 className={`w-full py-3 rounded-md font-semibold transition-all duration-200 ${canAddToCart()
-                    ? 'bg-red-500 hover:bg-red-600 text-white'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-red-500 hover:bg-red-600 text-white'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
               >
                 Add to Cart
@@ -517,7 +517,7 @@ const RestaurantDetailsPage = () => {
                 <div className="flex items-center space-x-4 mt-1">
                   <div className="flex items-center space-x-1">
                     <HiStar className="w-4 h-4 text-green-500 fill-current" />
-                    <span className="text-sm font-medium">{restaurant.rating}</span>
+                    <span className="text-sm font-medium">{parseFloat(restaurant.rating).toFixed(1)}</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <HiOutlineClock className="w-4 h-4 text-gray-500" />
@@ -544,17 +544,20 @@ const RestaurantDetailsPage = () => {
                   className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                   onClick={() => restaurant.image && setShowImageModal(true)}
                 >
-                  { restaurant.image !== null && restaurant.image !== undefined ? (
+                  {restaurant.image && restaurant.image.trim() !== '' ? (
                     <img
                       src={restaurant.image}
                       alt={restaurant.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-3xl">
-                      🍕
-                    </div>
-                  )}
+                  ) : null}
+                  <div className="w-full h-full flex items-center justify-center text-3xl" style={{ display: restaurant.image && restaurant.image.trim() !== '' ? 'none' : 'flex' }}>
+                    🍕
+                  </div>
                 </div>
                 <div className="flex-1">
                   <p className="text-gray-600 mb-2">{restaurant.description}</p>
@@ -601,8 +604,8 @@ const RestaurantDetailsPage = () => {
                     key={category}
                     onClick={() => setSelectedCategory(category)}
                     className={`px-6 py-2 rounded-full font-medium transition-all duration-200 ${selectedCategory === category
-                        ? 'bg-red-500 text-white shadow-lg'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md'
+                      ? 'bg-red-500 text-white shadow-lg'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 shadow-md'
                       }`}
                   >
                     {category}
@@ -625,12 +628,24 @@ const RestaurantDetailsPage = () => {
                     <div className="p-6">
                       <div className="flex items-start space-x-4">
                         <div className="relative">
-                          <div className="w-20 h-20 bg-gradient-to-br from-orange-200 to-red-200  flex items-center justify-center text-3xl rounded-md">
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className="w-full h-full object-cover rounded-md"
-                            />
+                          <div
+                            className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => item.image && setShowImageModal(true)}
+                          >
+                            {item.image && item.image.trim() !== '' ? (
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            <div className="w-full h-full flex items-center justify-center text-3xl" style={{ display: item.image && item.image.trim() !== '' ? 'none' : 'flex' }}>
+                              🍕
+                            </div>
                           </div>
 
                           {/* Dietary Badge */}
@@ -660,8 +675,8 @@ const RestaurantDetailsPage = () => {
                               <button
                                 onClick={() => toggleFavorite(item)}
                                 className={`p-2 rounded-full transition-all duration-200 transform hover:scale-110 ${isFavorite(item.id)
-                                    ? 'bg-pink-100 hover:bg-pink-200'
-                                    : 'hover:bg-gray-100'
+                                  ? 'bg-pink-100 hover:bg-pink-200'
+                                  : 'hover:bg-gray-100'
                                   }`}
                               >
                                 {isFavorite(item.id) ? (

@@ -10,7 +10,7 @@ const prisma = new PrismaClient({
   }
 });
 
-// Connection optimization
+
 async function connectWithRetry() {
   try {
     await prisma.$connect();

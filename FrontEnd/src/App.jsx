@@ -25,9 +25,9 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { Toaster } from 'react-hot-toast';
 import { useDataSync } from './hooks/useDataSync.js';
 
-// Layout component for pages with Navbar
+
 const Layout = () => {
-  useDataSync(); // Sync data when user logs in
+  useDataSync();
   return (
     <>
       <Navbar />
@@ -45,7 +45,7 @@ function App() {
         <LocationProvider>
           <Toaster position="bottom-right" />
         <Routes>
-          {/* Public routes - only accessible when NOT logged in */}
+
           <Route path="/select-login" element={
             <PublicRoute>
               <UserTypeSelection />
@@ -67,7 +67,7 @@ function App() {
               <LoginRestaurantPage />
             </PublicRoute>
           } />
-          {/* Customer routes - only accessible to customers */}
+
           <Route path="/" element={
             <RoleProtectedRoute allowedRoles={['CUSTOMER']}>
               <Layout />
@@ -83,7 +83,7 @@ function App() {
             <Route path="profile" element={<ProfilePage />} />
           </Route>
 
-          {/* Restaurant routes - only accessible to restaurant owners */}
+
           <Route path="/restaurant" element={
             <RoleProtectedRoute allowedRoles={['RESTAURANT_OWNER']}>
               <Layout />
@@ -95,7 +95,7 @@ function App() {
             <Route path="my-profile" element={<RestaurantProfilePage />} />
           </Route>
           
-          {/* Catch all route - redirect based on auth status */}
+
           <Route path="*" element={
             <ProtectedRoute>
               <Dashboard />

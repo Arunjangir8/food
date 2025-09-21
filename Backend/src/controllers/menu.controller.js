@@ -45,7 +45,7 @@ const createMenuItem = async (req, res) => {
 
     const { categoryId, name, description, price, isVeg = true, customizations } = req.body;
 
-    // Verify category belongs to user's restaurant
+
     const category = await prisma.menuCategory.findUnique({
       where: { id: categoryId },
       include: { restaurant: true }
@@ -67,7 +67,7 @@ const createMenuItem = async (req, res) => {
       customizations: typeof customizations === 'string' ? JSON.parse(customizations || '{}') : (customizations || {})
     };
 
-    // Add image URL if uploaded
+
     if (req.file) {
       menuItemData.image = req.file.path;
     }
@@ -95,7 +95,7 @@ const updateMenuItem = async (req, res) => {
     const { id } = req.params;
     const updateData = { ...req.body };
 
-    // Verify item belongs to user's restaurant
+
     const menuItem = await prisma.menuItem.findUnique({
       where: { id },
       include: {
@@ -112,7 +112,7 @@ const updateMenuItem = async (req, res) => {
       });
     }
 
-    // Convert data types from FormData strings
+
     if (updateData.price) updateData.price = parseFloat(updateData.price);
     if (updateData.isVeg) updateData.isVeg = updateData.isVeg === 'true';
     if (updateData.isAvailable) updateData.isAvailable = updateData.isAvailable === 'true';
@@ -124,7 +124,7 @@ const updateMenuItem = async (req, res) => {
       }
     }
 
-    // Add new image URL if uploaded
+
     if (req.file) {
       updateData.image = req.file.path;
     }

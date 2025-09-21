@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
-// Create axios instance
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -10,7 +10,7 @@ const api = axios.create({
   },
 });
 
-// Add auth token to requests
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -19,7 +19,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle auth errors
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -32,7 +32,7 @@ api.interceptors.response.use(
   }
 );
 
-// Auth API
+
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
@@ -42,7 +42,7 @@ export const authAPI = {
   loginRestaurant: (credentials) => api.post('/auth/restaurant/login', credentials),
 };
 
-// Restaurant API
+
 export const restaurantAPI = {
   getAll: (params) => api.get('/restaurants', { params }),
   getById: (id) => api.get(`/restaurants/${id}`),
@@ -53,7 +53,7 @@ export const restaurantAPI = {
   }),
 };
 
-// Menu API
+
 export const menuAPI = {
   getByRestaurant: (restaurantId) => api.get(`/menu/restaurant/${restaurantId}`),
   createItem: (data) => {
@@ -71,7 +71,7 @@ export const menuAPI = {
   deleteItem: (id) => api.delete(`/menu/items/${id}`),
 };
 
-// Order API
+
 export const orderAPI = {
   create: (orderData) => api.post('/orders', orderData),
   getUserOrders: (params) => api.get('/orders', { params }),
@@ -80,7 +80,7 @@ export const orderAPI = {
   updateStatus: (id, status) => api.put(`/orders/${id}/status`, { status }),
 };
 
-// User API
+
 export const userAPI = {
   getProfile: () => api.get('/users/profile'),
   updateProfile: (data) => {
@@ -94,14 +94,14 @@ export const userAPI = {
   updateAddress: (id, data) => api.put(`/users/addresses/${id}`, data),
   deleteAddress: (id) => api.delete(`/users/addresses/${id}`),
   
-  // Cart API
+
   getCart: () => api.get('/users/cart'),
   addToCart: (data) => api.post('/users/cart', data),
   updateCartItem: (id, data) => api.put(`/users/cart/${id}`, data),
   removeFromCart: (id) => api.delete(`/users/cart/${id}`),
   clearCart: () => api.delete('/users/cart'),
   
-  // Favorites API
+
   getFavorites: () => api.get('/users/favorites'),
   addToFavorites: (data) => api.post('/users/favorites', data),
   removeFromFavorites: (id) => api.delete(`/users/favorites/${id}`),

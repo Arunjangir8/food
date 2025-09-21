@@ -16,7 +16,7 @@ const createOrder = async (req, res) => {
 
     console.log('Order creation request:', { restaurantId, addressId, items, paymentMethod });
 
-    // Verify restaurant exists
+
     const restaurant = await prisma.restaurant.findUnique({
       where: { id: restaurantId }
     });
@@ -28,7 +28,7 @@ const createOrder = async (req, res) => {
       });
     }
 
-    // Verify address exists and belongs to user
+
     const address = await prisma.address.findUnique({
       where: { id: addressId }
     });
@@ -40,7 +40,7 @@ const createOrder = async (req, res) => {
       });
     }
 
-    // Calculate totals
+
     let subtotal = 0;
     const orderItems = [];
 
@@ -71,7 +71,7 @@ const createOrder = async (req, res) => {
     const tax = subtotal * 0.05; // 5% tax
     const total = subtotal + deliveryFee + tax;
 
-    // Generate order number
+
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
     const order = await prisma.order.create({
@@ -180,7 +180,7 @@ const getOrderById = async (req, res) => {
       });
     }
 
-    // Check if user owns the order or is restaurant owner
+
     if (order.userId !== req.user.id && order.restaurant.ownerId !== req.user.id) {
       return res.status(403).json({
         success: false,
@@ -218,7 +218,7 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Only restaurant owner can update order status
+
     if (order.restaurant.ownerId !== req.user.id) {
       return res.status(403).json({
         success: false,
@@ -228,7 +228,7 @@ const updateOrderStatus = async (req, res) => {
 
     const updateData = { status };
 
-    // Set timestamps based on status
+
     if (status === 'CONFIRMED') updateData.confirmedAt = new Date();
     if (status === 'PREPARING') updateData.preparedAt = new Date();
     if (status === 'OUT_FOR_DELIVERY') updateData.pickedUpAt = new Date();
@@ -258,7 +258,7 @@ const getRestaurantOrders = async (req, res) => {
   try {
     const { status, limit = 50, offset = 0 } = req.query;
 
-    // Get restaurant owned by current user
+
     const restaurant = await prisma.restaurant.findFirst({
       where: { ownerId: req.user.id }
     });

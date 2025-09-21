@@ -21,7 +21,7 @@ const {
 
 const router = express.Router();
 
-// All routes require authentication
+
 router.use(authenticate);
 
 router.get('/profile', getProfile);
@@ -43,7 +43,7 @@ router.put('/change-password',
   changePassword
 );
 
-// Address routes
+
 router.post('/addresses',
   [
     body('type').notEmpty().withMessage('Address type is required'),
@@ -57,7 +57,7 @@ router.post('/addresses',
 router.put('/addresses/:id', updateAddress);
 router.delete('/addresses/:id', deleteAddress);
 
-// Cart routes
+
 router.get('/cart', getCart);
 router.post('/cart', [
   body('menuItemId').notEmpty().withMessage('Menu item ID is required'),
@@ -69,7 +69,7 @@ router.put('/cart/:id', [
 router.delete('/cart/:id', removeFromCart);
 router.delete('/cart', clearCart);
 
-// Favorites routes
+
 router.get('/favorites', getFavorites);
 router.post('/favorites', [
   body('type').isIn(['RESTAURANT', 'MENU_ITEM']).withMessage('Type must be RESTAURANT or MENU_ITEM'),

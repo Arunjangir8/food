@@ -2,7 +2,7 @@ const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
-// Configure Cloudinary
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -10,7 +10,7 @@ cloudinary.config({
   secure: true
 });
 
-// Restaurant images storage
+
 const restaurantStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -27,7 +27,7 @@ const restaurantStorage = new CloudinaryStorage({
   }
 });
 
-// Banner images storage
+
 const bannerStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -44,7 +44,7 @@ const bannerStorage = new CloudinaryStorage({
   }
 });
 
-// Combined storage for both image and banner
+
 const combinedStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: (req, file) => {
@@ -70,12 +70,12 @@ const combinedStorage = new CloudinaryStorage({
   }
 });
 
-// Multer upload configuration
+
 const uploadRestaurantImages = multer({
   storage: combinedStorage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-    files: 2 // max 2 files
+    fileSize: 5 * 1024 * 1024,
+    files: 2
   },
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith('image/')) {
@@ -85,7 +85,7 @@ const uploadRestaurantImages = multer({
   }
 });
 
-// User avatar storage
+
 const avatarStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -102,12 +102,12 @@ const avatarStorage = new CloudinaryStorage({
   }
 });
 
-// Avatar upload configuration
+
 const uploadAvatar = multer({
   storage: avatarStorage,
   limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB limit
-    files: 1 // max 1 file
+    fileSize: 2 * 1024 * 1024,
+    files: 1
   },
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith('image/')) {
@@ -117,7 +117,7 @@ const uploadAvatar = multer({
   }
 });
 
-// Menu item images storage
+
 const menuItemStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -134,12 +134,12 @@ const menuItemStorage = new CloudinaryStorage({
   }
 });
 
-// Menu item upload configuration
+
 const uploadMenuItemImage = multer({
   storage: menuItemStorage,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-    files: 1 // max 1 file
+    fileSize: 10 * 1024 * 1024,
+    files: 1
   },
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith('image/')) {
@@ -149,7 +149,7 @@ const uploadMenuItemImage = multer({
   }
 });
 
-// Delete image from Cloudinary
+
 const deleteImage = async (publicId) => {
   try {
     return await cloudinary.uploader.destroy(publicId);

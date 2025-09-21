@@ -435,7 +435,7 @@ const RestaurantsPage = () => {
                                     <div className="flex items-center space-x-3">
                                         <div className="flex items-center space-x-1 bg-green-100 px-2 py-1 rounded-full">
                                             <HiStar className="w-4 h-4 text-green-600 fill-current" />
-                                            <span className="text-green-800 font-semibold text-sm">{restaurant.rating}</span>
+                                            <span className="text-green-800 font-semibold text-sm">{parseFloat(restaurant.rating).toFixed(1)}</span>
                                         </div>
 
                                         <div className="flex items-center space-x-1 text-gray-600">

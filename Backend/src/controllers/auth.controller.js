@@ -4,7 +4,7 @@ const { hashPassword, comparePassword } = require('../utils/bcrypt');
 const { generateToken } = require('../utils/jwt');
 const { deleteImage } = require('../config/cloudinary');
 
-// Helper function to create default menu categories
+
 const createDefaultMenuCategories = async (restaurantId) => {
   const defaultCategories = [
     { name: 'Appetizers', description: 'Start your meal with these delicious appetizers', sortOrder: 1 },
@@ -23,7 +23,7 @@ const createDefaultMenuCategories = async (restaurantId) => {
   }
 };
 
-// Regular user registration
+
 const register = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -37,7 +37,6 @@ const register = async (req, res) => {
 
     const { email, phone, name, password, role = 'CUSTOMER' } = req.body;
 
-    // Check if user exists
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [
@@ -57,7 +56,6 @@ const register = async (req, res) => {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user
     const user = await prisma.user.create({
       data: {
         email,
@@ -101,7 +99,7 @@ const register = async (req, res) => {
   }
 };
 
-// Regular user login
+
 const login = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -115,7 +113,6 @@ const login = async (req, res) => {
 
     const { email, password } = req.body;
 
-    // Find user
     const user = await prisma.user.findUnique({
       where: { email }
     });
@@ -127,7 +124,6 @@ const login = async (req, res) => {
       });
     }
 
-    // Check password
     const isValidPassword = await comparePassword(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({ 
@@ -136,7 +132,6 @@ const login = async (req, res) => {
       });
     }
 
-    // Check if user is active
     if (!user.isActive) {
       return res.status(401).json({ 
         success: false,
@@ -170,7 +165,7 @@ const login = async (req, res) => {
   }
 };
 
-// Restaurant owner registration
+
 const registerRestaurant = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -304,7 +299,7 @@ const registerRestaurant = async (req, res) => {
           deliveryFee: parseFloat(deliveryFee) || 0,
           minOrder: parseFloat(minOrder) || 0,
           deliveryTime,
-          ownerId: newUser.id  // Link restaurant to user
+          ownerId: newUser.id
         },
         select: {
           id: true,
@@ -375,7 +370,7 @@ const registerRestaurant = async (req, res) => {
   }
 };
 
-// Restaurant owner login - UPDATED
+
 const loginRestaurant = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -469,7 +464,7 @@ const loginRestaurant = async (req, res) => {
       data: {
         user: userWithoutPassword,
         restaurant,
-        restaurants: user.ownedRestaurants, // Include all owned restaurants
+        restaurants: user.ownedRestaurants,
         token
       }
     });
@@ -483,10 +478,8 @@ const loginRestaurant = async (req, res) => {
   }
 };
 
-// ... (keep all other existing functions) ...
 
 
-// Validation rules
 const registerValidation = [
   body('email')
     .isEmail()
@@ -519,7 +512,7 @@ const loginValidation = [
     .withMessage('Password is required')
 ];
 
-// Restaurant registration validation
+
 const restaurantRegistrationValidation = [
   // User validation
   body('name')

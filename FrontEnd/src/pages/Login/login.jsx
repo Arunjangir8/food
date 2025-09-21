@@ -14,10 +14,10 @@ const Login = () => {
   const location = useLocation();
   const { login } = useAuth(); // Use the auth context
 
-  // Get the page user was trying to access
+
   const from = location.state?.from?.pathname || "/";
 
-  // Form states
+
   const [signInForm, setSignInForm] = useState({
     email: '',
     password: ''
@@ -107,7 +107,7 @@ const Login = () => {
 
   return (
     <Components.AppWrapper>
-      {/* Back Button */}
+
       <button
         onClick={() => navigate('/select-login')}
         className="fixed top-4 left-4 z-50 flex items-center space-x-2 px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-white transition-all duration-200 shadow-lg"
@@ -117,7 +117,7 @@ const Login = () => {
       </button>
       
       <Components.Container>
-        {/* Sign Up */}
+
         <Components.SignUpContainer $isActive={isSignUpActive}>
           <Components.Form onSubmit={handleSignUp}>
             <Components.Title>Create Account</Components.Title>
@@ -170,7 +170,7 @@ const Login = () => {
           </Components.Form>
         </Components.SignUpContainer>
         
-        {/* Sign In */}
+
         <Components.SignInContainer $isActive={isSignUpActive}>
           <Components.Form onSubmit={handleSignIn}>
             <Components.Title>Sign In</Components.Title>
@@ -208,7 +208,7 @@ const Login = () => {
           </Components.Form>
         </Components.SignInContainer>
         
-        {/* Rest of your existing JSX remains the same */}
+
         <Components.OverlayContainer $isActive={isSignUpActive}>
           <Components.Overlay $isActive={isSignUpActive}>
             <Components.LeftOverlayPanel $isActive={isSignUpActive}>

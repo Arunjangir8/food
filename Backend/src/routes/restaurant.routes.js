@@ -12,11 +12,10 @@ const {
 
 const router = express.Router();
 
-// Public routes
+
 router.get('/', getAllRestaurants);
 
-// Protected routes
-// Get my restaurant (must be before /:id route)
+
 router.get('/my-restaurant',
   authenticate,
   authorize('RESTAURANT_OWNER'),
@@ -37,7 +36,7 @@ router.put('/:id',
   updateRestaurant
 );
 
-// Upload restaurant images
+
 router.post('/:id/upload-images',
   authenticate,
   authorize('RESTAURANT_OWNER', 'ADMIN'),

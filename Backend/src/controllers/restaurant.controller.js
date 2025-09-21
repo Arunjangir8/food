@@ -101,7 +101,7 @@ const updateRestaurant = async (req, res) => {
     const { id } = req.params;
     const updateData = { ...req.body };
 
-    // Convert numeric fields to proper types
+
     if (updateData.deliveryFee !== undefined) {
       updateData.deliveryFee = parseFloat(updateData.deliveryFee);
     }
@@ -115,7 +115,7 @@ const updateRestaurant = async (req, res) => {
       updateData.longitude = parseFloat(updateData.longitude);
     }
 
-    // Remove fields that shouldn't be updated
+
     delete updateData.id;
     delete updateData.ownerId;
     delete updateData.createdAt;
@@ -125,7 +125,7 @@ const updateRestaurant = async (req, res) => {
     delete updateData.totalRating;
     delete updateData.ratingCount;
 
-    // Check if restaurant belongs to user
+
     const restaurant = await prisma.restaurant.findUnique({
       where: { id }
     });
@@ -174,7 +174,7 @@ const getMyRestaurant = async (req, res) => {
       }
     });
 
-    // If no restaurant found by ownerId, try to find by email (for backward compatibility)
+
     if (!restaurant) {
       restaurant = await prisma.restaurant.findFirst({
         where: {
@@ -189,7 +189,7 @@ const getMyRestaurant = async (req, res) => {
         }
       });
       
-      // Update the restaurant to have the correct ownerId
+
       if (restaurant) {
         restaurant = await prisma.restaurant.update({
           where: { id: restaurant.id },
@@ -227,7 +227,7 @@ const uploadImages = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Check if restaurant exists and belongs to user
+
     const restaurant = await prisma.restaurant.findUnique({
       where: { id }
     });
@@ -248,12 +248,12 @@ const uploadImages = async (req, res) => {
 
     const updateData = {};
     
-    // Handle restaurant logo upload
+
     if (req.files && req.files.image && req.files.image[0]) {
       updateData.image = req.files.image[0].path;
     }
     
-    // Handle banner upload
+
     if (req.files && req.files.banner && req.files.banner[0]) {
       updateData.banner = req.files.banner[0].path;
     }

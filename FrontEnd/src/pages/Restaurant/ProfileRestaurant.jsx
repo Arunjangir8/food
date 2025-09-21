@@ -171,7 +171,7 @@ const RestaurantProfilePage = () => {
         {/* Header Section */}
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
           {/* Banner Section */}
-          <div className="relative h-64 bg-gradient-to-r from-red-500 to-red-600">
+          <div className="relative h-64">
             {restaurantData.banner && (
               <img 
                 src={restaurantData.banner} 
@@ -240,8 +240,8 @@ const RestaurantProfilePage = () => {
               <div className="flex-1">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{restaurantData.name}</h1>
-                    <p className="text-gray-600 mb-3">{restaurantData.description}</p>
+                    <h1 className="text-3xl font-bold text-white mb-2">{restaurantData.name}</h1>
+                    <p className="text-white mb-3">{restaurantData.description}</p>
                     
                     <div className="flex flex-wrap gap-2 mb-4">
                       {restaurantData.cuisine?.map((cuisine, index) => (

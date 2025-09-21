@@ -12,11 +12,11 @@ const {
 
 const router = express.Router();
 
-// Regular user registration and login
+
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
 
-// Restaurant owner registration with file upload
+
 router.post(
   '/restaurant/register',
   uploadRestaurantImages.fields([
@@ -27,7 +27,7 @@ router.post(
   registerRestaurant
 );
 
-// Restaurant owner login
+
 router.post('/restaurant/login', loginValidation, loginRestaurant);
 
 module.exports = router;

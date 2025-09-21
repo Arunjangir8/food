@@ -1,8 +1,8 @@
 import { userAPI } from '../services/api.js';
 
-// localStorage utility functions for cart and favorites with API sync
+
 export const localStorageUtils = {
-  // Cart functions
+
   getCart: () => {
     try {
       const cart = localStorage.getItem('foodCart');
@@ -100,7 +100,7 @@ export const localStorageUtils = {
     }
   },
 
-  // Favorites functions
+
   getFavorites: () => {
     try {
       const favorites = localStorage.getItem('foodFavorites');
@@ -169,7 +169,7 @@ export const localStorageUtils = {
     return favorites;
   },
 
-  // Sync functions - only called when needed (cart page, checkout)
+
   syncCartWithDB: async (userAPI) => {
     try {
       const localCart = localStorageUtils.getCart();
@@ -201,7 +201,7 @@ export const localStorageUtils = {
     }
   },
 
-  // Load data from API and merge with localStorage
+
   loadFromAPI: async () => {
     try {
       const [cartResponse, favoritesResponse] = await Promise.all([

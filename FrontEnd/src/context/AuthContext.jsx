@@ -12,7 +12,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    // Fix: Use consistent key 'userProfile'
+
     const savedUser = localStorage.getItem('userProfile');
     return savedUser ? JSON.parse(savedUser) : null;
   });
@@ -24,9 +24,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fix: Check for consistent keys
+
     const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('userProfile'); // Changed from 'user' to 'userProfile'
+    const savedUser = localStorage.getItem('userProfile');
     
     if (savedToken && savedUser) {
       setToken(savedToken);
@@ -37,14 +37,14 @@ export const AuthProvider = ({ children }) => {
 
   const login = (userData, authToken) => {
     localStorage.setItem('token', authToken);
-    localStorage.setItem('userProfile', JSON.stringify(userData)); // Consistent key
+    localStorage.setItem('userProfile', JSON.stringify(userData));
     setToken(authToken);
     setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('userProfile'); // Consistent key
+    localStorage.removeItem('userProfile');
     setToken(null);
     setUser(null);
   };

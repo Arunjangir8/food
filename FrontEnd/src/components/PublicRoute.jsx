@@ -12,7 +12,7 @@ const PublicRoute = ({ children }) => {
     );
   }
 
-  // If user is authenticated, redirect to home
+
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }

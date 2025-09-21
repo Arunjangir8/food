@@ -18,7 +18,7 @@ const getProfile = async (req, res) => {
       }
     });
 
-    // Get cart and favorites count
+
     const [cartCount, favoritesCount] = await Promise.all([
       prisma.cartItem.count({ where: { userId: req.user.id } }),
       prisma.favorite.count({ where: { userId: req.user.id } })
@@ -170,7 +170,7 @@ const updateAddress = async (req, res) => {
     const { id } = req.params;
     const { type, address, city, pincode, latitude, longitude, isDefault } = req.body;
 
-    // Check if address belongs to user
+
     const existingAddress = await prisma.address.findUnique({
       where: { id }
     });
@@ -241,7 +241,7 @@ const deleteAddress = async (req, res) => {
   }
 };
 
-// Cart functions
+
 const getCart = async (req, res) => {
   try {
     const cartItems = await prisma.cartItem.findMany({
@@ -407,7 +407,7 @@ const clearCart = async (req, res) => {
   }
 };
 
-// Favorites functions
+
 const getFavorites = async (req, res) => {
   try {
     const favorites = await prisma.favorite.findMany({
