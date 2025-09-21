@@ -32,6 +32,7 @@ const RestaurantDetailsPage = () => {
   const [favorites, setFavorites] = useState([]);
   const [showCustomization, setShowCustomization] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedModalImage, setSelectedModalImage] = useState(null);
   const [restaurant, setRestaurant] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -542,7 +543,12 @@ const RestaurantDetailsPage = () => {
               <div className="flex items-center space-x-4">
                 <div
                   className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => restaurant.image && setShowImageModal(true)}
+                  onClick={() => {
+                    if (restaurant.image && restaurant.image.trim() !== '' && !restaurant.image.includes('🍕')) {
+                      setSelectedModalImage({ src: restaurant.image, alt: restaurant.name });
+                      setShowImageModal(true);
+                    }
+                  }}
                 >
                   {restaurant.image && restaurant.image.trim() !== '' ? (
                     <img
@@ -630,7 +636,12 @@ const RestaurantDetailsPage = () => {
                         <div className="relative">
                           <div
                             className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                            onClick={() => item.image && setShowImageModal(true)}
+                            onClick={() => {
+                              if (item.image && item.image.trim() !== '' && !item.image.includes('🍕')) {
+                                setSelectedModalImage({ src: item.image, alt: item.name });
+                                setShowImageModal(true);
+                              }
+                            }}
                           >
                             {item.image && item.image.trim() !== '' ? (
                               <img
@@ -837,12 +848,12 @@ const RestaurantDetailsPage = () => {
       )}
 
       {/* Image Modal */}
-      {showImageModal && restaurant.image && (
+      {showImageModal && selectedModalImage && (
         <div className="fixed inset-0 w-[100vw] bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onClick={() => setShowImageModal(false)}>
           <div className="relative max-w-4xl max-h-[90vh]">
             <img
-              src={restaurant.image}
-              alt={restaurant.name}
+              src={selectedModalImage.src}
+              alt={selectedModalImage.alt}
               className="w-full h-full object-contain rounded-md"
             />
             <button

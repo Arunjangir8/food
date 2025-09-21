@@ -29,6 +29,7 @@ const RestaurantMenu = () => {
   });
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchMenuData = async () => {
@@ -77,6 +78,7 @@ const RestaurantMenu = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     try {
       const submitData = new FormData();
@@ -122,6 +124,8 @@ const RestaurantMenu = () => {
     } catch (error) {
       console.error('Error saving menu item:', error);
       toast.error('Failed to save menu item');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -416,15 +420,26 @@ const RestaurantMenu = () => {
                 <div className="flex space-x-3 pt-4">
                   <button
                     type="submit"
-                    className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 flex items-center justify-center gap-2"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 disabled:bg-red-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    <HiOutlineSave className="w-4 h-4" />
-                    {editingItem ? 'Update' : 'Create'}
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>{editingItem ? 'Updating...' : 'Creating...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <HiOutlineSave className="w-4 h-4" />
+                        <span>{editingItem ? 'Update' : 'Create'}</span>
+                      </>
+                    )}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
-                    className="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600"
+                    disabled={isSubmitting}
+                    className="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>
