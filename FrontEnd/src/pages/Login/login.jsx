@@ -69,9 +69,21 @@ const Login = () => {
         navigate(from, { replace: true });
       }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      if (err.response?.data?.requiresVerification) {
+        // Redirect to OTP verification
+        navigate('/verify-otp', {
+          state: {
+            userId: err.response.data.userId,
+            email: signInForm.email,
+            isRestaurant: false
+          }
+        });
+        toast.error('Please verify your email address first.');
+      } else {
+        const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
+        setError(errorMessage);
+        toast.error(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -86,11 +98,21 @@ const Login = () => {
       const response = await authAPI.register(signUpForm);
       
       if (response.data.success) {
-        // Use the auth context login function instead of direct localStorage
-        login(response.data.data.user, response.data.data.token);
-        
-        // Redirect to home after successful registration
-        navigate('/', { replace: true });
+        if (response.data.data.requiresVerification) {
+          // Redirect to OTP verification
+          navigate('/verify-otp', {
+            state: {
+              userId: response.data.data.userId,
+              email: response.data.data.email,
+              isRestaurant: false
+            }
+          });
+          toast.success('Registration successful! Please check your email for verification code.');
+        } else {
+          // Direct login (fallback)
+          login(response.data.data.user, response.data.data.token);
+          navigate('/', { replace: true });
+        }
       }
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';

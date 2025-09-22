@@ -52,9 +52,21 @@ const LoginRestaurantPage = () => {
         navigate('/restaurant/my-profile');
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed';
-      setErrors({ general: errorMessage });
-      toast.error(errorMessage);
+      if (error.response?.data?.requiresVerification) {
+        // Redirect to OTP verification
+        navigate('/verify-otp', {
+          state: {
+            userId: error.response.data.userId,
+            email: formData.email,
+            isRestaurant: true
+          }
+        });
+        toast.error('Please verify your email address first.');
+      } else {
+        const errorMessage = error.response?.data?.message || 'Login failed';
+        setErrors({ general: errorMessage });
+        toast.error(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }

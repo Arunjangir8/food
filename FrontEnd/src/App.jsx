@@ -1,5 +1,6 @@
 import Login from './pages/Login/login.jsx'
 import UserTypeSelection from './pages/Login/userTypeSelection.jsx'
+import OTPVerification from './pages/Login/OTPVerification.jsx'
 import { Dashboard } from './pages/Home/dashboard.jsx'
 import RestaurantsPage from './pages/Restaurants/restaurantsPage.jsx'
 import RestaurantDetailsPage from './pages/Restaurants/restaurantDetails.jsx'
@@ -65,6 +66,11 @@ function App() {
           <Route path="/restaurant/login" element={
             <PublicRoute>
               <LoginRestaurantPage />
+            </PublicRoute>
+          } />
+          <Route path="/verify-otp" element={
+            <PublicRoute>
+              <OTPVerification />
             </PublicRoute>
           } />
 

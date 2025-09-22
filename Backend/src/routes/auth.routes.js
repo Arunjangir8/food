@@ -5,9 +5,13 @@ const {
   login,
   registerRestaurant,
   loginRestaurant,
+  verifyOTP,
+  resendOTP,
   registerValidation,
   loginValidation,
-  restaurantRegistrationValidation
+  restaurantRegistrationValidation,
+  otpVerificationValidation,
+  resendOtpValidation
 } = require('../controllers/auth.controller');
 
 const router = express.Router();
@@ -15,6 +19,8 @@ const router = express.Router();
 
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
+router.post('/verify-otp', otpVerificationValidation, verifyOTP);
+router.post('/resend-otp', resendOtpValidation, resendOTP);
 
 
 router.post(

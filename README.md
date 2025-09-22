@@ -17,6 +17,7 @@
 
 ### 👥 User Management
 - **Dual Authentication System**: Separate login for customers and restaurant owners
+- **Email Verification**: OTP-based email verification for secure registration
 - **Secure Registration**: JWT-based authentication with password encryption
 - **Profile Management**: Complete user profile with address management
 - **Password Security**: Change password functionality with validation
@@ -132,6 +133,8 @@ npm run dev
 ### Authentication
 - `POST /api/auth/register` - Customer registration
 - `POST /api/auth/login` - Customer login
+- `POST /api/auth/verify-otp` - Verify email OTP
+- `POST /api/auth/resend-otp` - Resend email OTP
 - `POST /api/auth/restaurant/register` - Restaurant owner registration
 - `POST /api/auth/restaurant/login` - Restaurant owner login
 
@@ -287,6 +290,6 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ---
 
 <div align="center">
-  <p>Made with ❤️ by the Food Delivery Team</p>
+  <p>Made with ❤️ by Arun</p>
   <p>⭐ Star this repo if you found it helpful!</p>
 </div>

@@ -40,6 +40,8 @@ export const authAPI = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   loginRestaurant: (credentials) => api.post('/auth/restaurant/login', credentials),
+  verifyOTP: (data) => api.post('/auth/verify-otp', data),
+  resendOTP: (data) => api.post('/auth/resend-otp', data),
 };
 
 

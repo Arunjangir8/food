@@ -3,6 +3,7 @@ const prisma = require('../utils/prisma');
 const { hashPassword, comparePassword } = require('../utils/bcrypt');
 const { generateToken } = require('../utils/jwt');
 const { deleteImage } = require('../config/cloudinary');
+const { generateOTP, sendOTPEmail } = require('../utils/emailService');
 
 
 const createDefaultMenuCategories = async (restaurantId) => {
@@ -53,6 +54,10 @@ const register = async (req, res) => {
       });
     }
 
+    // Generate OTP and expiry
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
     // Hash password
     const hashedPassword = await hashPassword(password);
 
@@ -62,7 +67,9 @@ const register = async (req, res) => {
         phone: phone || null,
         name,
         password: hashedPassword,
-        role
+        role,
+        emailOtp: otp,
+        otpExpiresAt: otpExpiry
       },
       select: {
         id: true,
@@ -71,23 +78,21 @@ const register = async (req, res) => {
         name: true,
         avatar: true,
         role: true,
+        isEmailVerified: true,
         createdAt: true
       }
     });
 
-    // Generate token
-    const token = generateToken({ 
-      userId: user.id, 
-      email: user.email, 
-      role: user.role 
-    });
+    // Send OTP email
+    await sendOTPEmail(email, otp, name);
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'Registration successful. Please verify your email with the OTP sent to your email address.',
       data: {
-        user,
-        token
+        userId: user.id,
+        email: user.email,
+        requiresVerification: true
       }
     });
   } catch (error) {
@@ -139,6 +144,15 @@ const login = async (req, res) => {
       });
     }
 
+    if (!user.isEmailVerified) {
+      return res.status(401).json({ 
+        success: false,
+        message: 'Please verify your email address before logging in',
+        requiresVerification: true,
+        userId: user.id
+      });
+    }
+
     // Generate token
     const token = generateToken({ 
       userId: user.id, 
@@ -146,7 +160,7 @@ const login = async (req, res) => {
       role: user.role 
     });
 
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _, emailOtp, otpExpiresAt, ...userWithoutPassword } = user;
 
     res.json({
       success: true,
@@ -253,6 +267,10 @@ const registerRestaurant = async (req, res) => {
       });
     }
 
+    // Generate OTP and expiry
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
     // Hash password
     const hashedPassword = await hashPassword(password);
 
@@ -269,7 +287,9 @@ const registerRestaurant = async (req, res) => {
           email,
           phone: phone || null,
           password: hashedPassword,
-          role: 'RESTAURANT_OWNER'
+          role: 'RESTAURANT_OWNER',
+          emailOtp: otp,
+          otpExpiresAt: otpExpiry
         },
         select: {
           id: true,
@@ -279,6 +299,7 @@ const registerRestaurant = async (req, res) => {
           role: true,
           avatar: true,
           isActive: true,
+          isEmailVerified: true,
           createdAt: true
         }
       });
@@ -328,21 +349,17 @@ const registerRestaurant = async (req, res) => {
       return { user: newUser, restaurant: newRestaurant };
     });
 
-    // Generate token
-    const token = generateToken({
-      userId: result.user.id,
-      email: result.user.email,
-      role: result.user.role,
-      restaurantId: result.restaurant.id
-    });
+    // Send OTP email
+    await sendOTPEmail(email, otp, name);
 
     res.status(201).json({
       success: true,
-      message: 'Restaurant registered successfully',
+      message: 'Restaurant registration successful. Please verify your email with the OTP sent to your email address.',
       data: {
-        user: result.user,
-        restaurant: result.restaurant,
-        token
+        userId: result.user.id,
+        email: result.user.email,
+        restaurantId: result.restaurant.id,
+        requiresVerification: true
       }
     });
 
@@ -370,6 +387,180 @@ const registerRestaurant = async (req, res) => {
   }
 };
 
+
+const verifyOTP = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { userId, otp } = req.body;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        ownedRestaurants: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            image: true,
+            banner: true,
+            cuisine: true,
+            address: true,
+            city: true,
+            pincode: true,
+            openTime: true,
+            closeTime: true,
+            deliveryFee: true,
+            minOrder: true,
+            deliveryTime: true,
+            isActive: true,
+            rating: true,
+            createdAt: true
+          }
+        }
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified'
+      });
+    }
+
+    if (!user.emailOtp || user.emailOtp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid OTP'
+      });
+    }
+
+    if (!user.otpExpiresAt || new Date() > user.otpExpiresAt) {
+      return res.status(400).json({
+        success: false,
+        message: 'OTP has expired. Please request a new one.'
+      });
+    }
+
+    // Update user to mark email as verified
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        isEmailVerified: true,
+        emailOtp: null,
+        otpExpiresAt: null
+      },
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        name: true,
+        avatar: true,
+        role: true,
+        isEmailVerified: true,
+        createdAt: true
+      }
+    });
+
+    // Generate token
+    const token = generateToken({
+      userId: updatedUser.id,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      restaurantId: user.ownedRestaurants[0]?.id || null
+    });
+
+    res.json({
+      success: true,
+      message: 'Email verified successfully',
+      data: {
+        user: updatedUser,
+        restaurant: user.ownedRestaurants[0] || null,
+        token
+      }
+    });
+  } catch (error) {
+    console.error('OTP verification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
+
+const resendOTP = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { userId } = req.body;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is already verified'
+      });
+    }
+
+    // Generate new OTP
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Update user with new OTP
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        emailOtp: otp,
+        otpExpiresAt: otpExpiry
+      }
+    });
+
+    // Send OTP email
+    await sendOTPEmail(user.email, otp, user.name);
+
+    res.json({
+      success: true,
+      message: 'New OTP sent to your email address'
+    });
+  } catch (error) {
+    console.error('Resend OTP error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    });
+  }
+};
 
 const loginRestaurant = async (req, res) => {
   try {
@@ -444,6 +635,15 @@ const loginRestaurant = async (req, res) => {
       });
     }
 
+    if (!user.isEmailVerified) {
+      return res.status(401).json({
+        success: false,
+        message: 'Please verify your email address before logging in',
+        requiresVerification: true,
+        userId: user.id
+      });
+    }
+
     // Get the main restaurant (assuming one restaurant per owner for now)
     const restaurant = user.ownedRestaurants[0] || null;
 
@@ -456,7 +656,7 @@ const loginRestaurant = async (req, res) => {
     });
 
     // Remove password from response
-    const { password: _, ownedRestaurants, ...userWithoutPassword } = user;
+    const { password: _, ownedRestaurants, emailOtp, otpExpiresAt, ...userWithoutPassword } = user;
 
     res.status(200).json({
       success: true,
@@ -492,10 +692,6 @@ const registerValidation = [
   body('password')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters long'),
-  body('phone')
-    .optional()
-    .isMobilePhone()
-    .withMessage('Please provide a valid phone number'),
   body('role')
     .optional()
     .isIn(['CUSTOMER', 'RESTAURANT_OWNER', 'DELIVERY_PARTNER'])
@@ -600,12 +796,32 @@ const restaurantRegistrationValidation = [
     .withMessage('Delivery time must be between 3 and 50 characters')
 ];
 
+const otpVerificationValidation = [
+  body('userId')
+    .notEmpty()
+    .withMessage('User ID is required'),
+  body('otp')
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage('OTP must be a 6-digit number')
+];
+
+const resendOtpValidation = [
+  body('userId')
+    .notEmpty()
+    .withMessage('User ID is required')
+];
+
 module.exports = {
   register,
   login,
   registerRestaurant,
   loginRestaurant,
+  verifyOTP,
+  resendOTP,
   registerValidation,
   loginValidation,
-  restaurantRegistrationValidation
+  restaurantRegistrationValidation,
+  otpVerificationValidation,
+  resendOtpValidation
 };

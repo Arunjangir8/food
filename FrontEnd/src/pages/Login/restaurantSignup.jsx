@@ -193,8 +193,21 @@ const RestaurantRegisterPage = () => {
       const response = await authAPI.registerRestaurant(formDataToSend);
       
       if (response.data.success) {
-        login(response.data.data.user, response.data.data.token);
-        navigate('/restaurant/my-profile');
+        if (response.data.data.requiresVerification) {
+          // Redirect to OTP verification
+          navigate('/verify-otp', {
+            state: {
+              userId: response.data.data.userId,
+              email: response.data.data.email,
+              isRestaurant: true
+            }
+          });
+          toast.success('Registration successful! Please check your email for verification code.');
+        } else {
+          // Direct login (fallback)
+          login(response.data.data.user, response.data.data.token);
+          navigate('/restaurant/my-profile');
+        }
       }
     } catch (error) {
       console.error('Registration failed:', error);
