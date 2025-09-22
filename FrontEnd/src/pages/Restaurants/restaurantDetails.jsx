@@ -33,6 +33,7 @@ const RestaurantDetailsPage = () => {
   const [showCustomization, setShowCustomization] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedModalImage, setSelectedModalImage] = useState(null);
+
   const [restaurant, setRestaurant] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -317,6 +318,21 @@ const RestaurantDetailsPage = () => {
   }
 
   const addToCart = async (item, customizations = {}) => {
+    // Calculate customization price properly
+    let customizationPrice = 0;
+
+    Object.values(customizations).forEach(customizationValue => {
+      if (Array.isArray(customizationValue)) {
+        // Handle checkbox customizations (arrays)
+        customizationValue.forEach(option => {
+          customizationPrice += option?.price || 0;
+        });
+      } else if (customizationValue && customizationValue.price) {
+        // Handle radio customizations (single objects)
+        customizationPrice += customizationValue.price;
+      }
+    });
+
     const cartItem = {
       itemId: item.id,
       restaurantId: item.restaurantId,
@@ -324,15 +340,20 @@ const RestaurantDetailsPage = () => {
       name: item.name,
       price: item.price,
       customizations,
-      customizationPrice: Object.values(customizations).flat().reduce((total, option) => total + (option?.price || 0), 0),
-      totalPrice: item.price + Object.values(customizations).flat().reduce((total, option) => total + (option?.price || 0), 0),
+      customizationPrice,
+      totalPrice: item.price + customizationPrice,
       image: item.image || '🍕',
       quantity: 1
     };
 
-    await localStorageUtils.addToCart(cartItem, !!user);
-    setShowCustomization(null);
-    toast.success(`${item.name} added to cart!`);
+    try {
+      await localStorageUtils.addToCart(cartItem, !!user);
+      setShowCustomization(null);
+      toast.success(`${item.name} added to cart!`);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add item to cart');
+    }
   };
 
   const updateQuantity = (cartItemId, change) => {
@@ -393,7 +414,7 @@ const RestaurantDetailsPage = () => {
           if (!newCustomizations[customizationName]) {
             newCustomizations[customizationName] = [];
           }
-          const currentOptions = newCustomizations[customizationName];
+          const currentOptions = [...newCustomizations[customizationName]];
           const optionIndex = currentOptions.findIndex(opt => opt.name === option.name);
 
           if (optionIndex > -1) {
@@ -401,6 +422,7 @@ const RestaurantDetailsPage = () => {
           } else {
             currentOptions.push(option);
           }
+          newCustomizations[customizationName] = currentOptions;
         }
 
         return newCustomizations;
@@ -415,17 +437,24 @@ const RestaurantDetailsPage = () => {
     };
 
     const canAddToCart = () => {
-      return item.customizations.every(customization => {
-        if (customization.required) {
-          return selectedCustomizations[customization.name];
-        }
-        return true;
-      });
+      // For now, assume all customizations are optional since API doesn't specify required field
+      return true;
     };
+
+    // Transform API customizations to expected format
+    const normalizedCustomizations = (item.customizations || []).map(customization => {
+      // Determine type based on options count - if more than 3 options, likely checkbox
+      const type = customization.options && customization.options.length > 3 ? 'checkbox' : 'radio';
+      return {
+        ...customization,
+        type: type,
+        required: false // Default to optional since API doesn't specify
+      };
+    });
 
     return (
       <div className="fixed inset-0 w-[100vw] bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-md max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="bg-white rounded-md max-w-md w-full max-h-[90vh] overflow-y-auto mx-4">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-gray-900">{item.name}</h3>
@@ -438,12 +467,27 @@ const RestaurantDetailsPage = () => {
             </div>
 
             <div className="mb-6">
-              <div className="text-4xl mb-2 text-center">{item.image}</div>
+              <div className="w-full h-48 rounded-md overflow-hidden bg-gray-100 mb-4">
+                {item.image && item.image.startsWith('http') ? (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div className="w-full h-full flex items-center justify-center text-6xl" style={{ display: item.image && item.image.startsWith('http') ? 'none' : 'flex' }}>
+                  {item.image && !item.image.startsWith('http') ? item.image : '🍕'}
+                </div>
+              </div>
               <p className="text-gray-600 text-sm">{item.description}</p>
               <p className="text-lg font-semibold text-gray-900 mt-2">₹{item.price}</p>
             </div>
 
-            {item.customizations.map(customization => (
+            {normalizedCustomizations.map(customization => (
               <div key={customization.name} className="mb-6">
                 <h4 className="font-semibold text-gray-900 mb-3">
                   {customization.name}
@@ -451,22 +495,29 @@ const RestaurantDetailsPage = () => {
                 </h4>
 
                 <div className="space-y-2">
-                  {customization.options.map(option => (
-                    <label key={option.name} className="flex items-center justify-between p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">
-                      <div className="flex items-center space-x-3">
-                        <input
-                          type={customization.type}
-                          name={customization.name}
-                          onChange={() => handleCustomizationChange(customization.name, option, customization.type)}
-                          className="w-4 h-4 text-red-500 focus:ring-red-500"
-                        />
-                        <span className="text-gray-700">{option.name}</span>
-                      </div>
-                      {option.price > 0 && (
-                        <span className="text-gray-600 font-medium">+₹{option.price}</span>
-                      )}
-                    </label>
-                  ))}
+                  {customization.options.map(option => {
+                    const isSelected = customization.type === 'radio'
+                      ? selectedCustomizations[customization.name]?.name === option.name
+                      : selectedCustomizations[customization.name]?.some(opt => opt.name === option.name);
+
+                    return (
+                      <label key={option.name} className="flex items-center justify-between p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer">
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type={customization.type}
+                            name={customization.name}
+                            checked={isSelected}
+                            onChange={() => handleCustomizationChange(customization.name, option, customization.type)}
+                            className="w-4 h-4 text-red-500 focus:ring-red-500"
+                          />
+                          <span className="text-gray-700">{option.name}</span>
+                        </div>
+                        {option.price > 0 && (
+                          <span className="text-gray-600 font-medium">+₹{option.price}</span>
+                        )}
+                      </label>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -534,13 +585,13 @@ const RestaurantDetailsPage = () => {
           </div>
         </div>
 
-        <div className="flex">
+        <div className="flex flex-col lg:flex-row">
           {/* Left Side - Menu Items */}
           <div className="flex-1 px-4 sm:px-6 lg:px-8 py-6">
 
             {/* Restaurant Info */}
             <div className="bg-white rounded-md shadow-xl p-6 mb-6">
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <div
                   className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                   onClick={() => {
@@ -567,7 +618,7 @@ const RestaurantDetailsPage = () => {
                 </div>
                 <div className="flex-1">
                   <p className="text-gray-600 mb-2">{restaurant.description}</p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 text-sm text-gray-500">
                     <div className="flex items-center space-x-1">
                       <HiOutlineLocationMarker className="w-4 h-4" />
                       <span>{restaurant.address}</span>
@@ -631,11 +682,11 @@ const RestaurantDetailsPage = () => {
               ) : (
                 filteredItems.map(item => (
                   <div key={item.id} className="bg-white rounded-md shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-                    <div className="p-6">
-                      <div className="flex items-start space-x-4">
-                        <div className="relative">
+                    <div className="p-4 sm:p-6">
+                      <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4">
+                        <div className="relative mx-auto sm:mx-0">
                           <div
-                            className="w-20 h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                            className="w-24 h-24 sm:w-20 sm:h-20 rounded-md overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                             onClick={() => {
                               if (item.image && item.image.trim() !== '' && !item.image.includes('🍕')) {
                                 setSelectedModalImage({ src: item.image, alt: item.name });
@@ -674,15 +725,15 @@ const RestaurantDetailsPage = () => {
                           )}
                         </div>
 
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between">
+                        <div className="flex-1 text-center sm:text-left">
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-4 sm:space-y-0">
                             <div>
                               <h3 className="text-lg font-bold text-gray-900 mb-1">{item.name}</h3>
                               <p className="text-gray-600 text-sm mb-2">{item.description}</p>
                               <p className="text-xl font-bold text-red-500">₹{item.price}</p>
                             </div>
 
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center justify-center sm:justify-start space-x-2">
                               <button
                                 onClick={() => toggleFavorite(item)}
                                 className={`p-2 rounded-full transition-all duration-200 transform hover:scale-110 ${isFavorite(item.id)
@@ -715,7 +766,7 @@ const RestaurantDetailsPage = () => {
           </div>
 
           {/* Right Side - Interactive Cart Preview */}
-          <div className="w-96 bg-white h-[85vh] shadow-2xl p-6 overflow-y-auto max-h-screen sticky top-0">
+          <div className="w-full lg:w-96 bg-white lg:h-[85vh] shadow-2xl p-6 overflow-y-auto lg:max-h-screen lg:sticky lg:top-0">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900 flex items-center space-x-2">
                 <span>Your Cart</span>
@@ -746,8 +797,8 @@ const RestaurantDetailsPage = () => {
                       <div className="flex items-start space-x-3">
                         <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                           {cartItem.image && cartItem.image.startsWith('http') ? (
-                            <img 
-                              src={cartItem.image} 
+                            <img
+                              src={cartItem.image}
                               alt={cartItem.name}
                               className="w-full h-full object-cover"
                               onError={(e) => {
@@ -756,7 +807,7 @@ const RestaurantDetailsPage = () => {
                               }}
                             />
                           ) : null}
-                          <div className="w-full h-full flex items-center justify-center text-xl" style={{display: cartItem.image && cartItem.image.startsWith('http') ? 'none' : 'flex'}}>
+                          <div className="w-full h-full flex items-center justify-center text-xl" style={{ display: cartItem.image && cartItem.image.startsWith('http') ? 'none' : 'flex' }}>
                             {cartItem.image && !cartItem.image.startsWith('http') ? cartItem.image : '🍕'}
                           </div>
                         </div>

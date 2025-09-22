@@ -26,9 +26,16 @@ const Footer = () => {
 
     const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad'];
 
+    const socialLinks = [
+        { Icon: FaFacebookF, href: '#' },
+        { Icon: FaTwitter, href: '#' },
+        { Icon: FaInstagram, href: '#' },
+        { Icon: FaLinkedinIn, href: '#' }
+    ];
+
     return (
         <div className='w-[100vw]'>
-            <div className="bg-gradient-to-r from-red-500 to-red-500 py-16">
+            <div className="bg-red-500 py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center">
                         <h3 className="text-3xl font-bold text-white mb-4">
@@ -155,19 +162,14 @@ const Footer = () => {
 
                             {/* Copyright */}
                             <div className="flex items-center space-x-2 text-gray-400 text-sm">
-                                <span>© {currentYear} FoodieExpress. Made with</span>
+                                <span>© {currentYear} FoodieZone. Made with</span>
                                 <HiHeart className="w-4 h-4 text-red-500 fill-current" />
                                 <span>in India. All rights reserved.</span>
                             </div>
 
                             {/* Social Media */}
                             <div className="flex items-center space-x-3">
-                                {[
-                                    { Icon: FaFacebookF, href: '#' },
-                                    { Icon: FaTwitter, href: '#' },
-                                    { Icon: FaInstagram, href: '#' },
-                                    { Icon: FaLinkedinIn, href: '#' }
-                                ].map(({ Icon, href }, index) => (
+                                {socialLinks.map(({ Icon, href }, index) => (
                                     <a
                                         key={index}
                                         href={href}
