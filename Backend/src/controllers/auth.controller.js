@@ -6,23 +6,7 @@ const { deleteImage } = require('../config/cloudinary');
 const { generateOTP, sendOTPEmail } = require('../utils/emailService');
 
 
-const createDefaultMenuCategories = async (restaurantId) => {
-  const defaultCategories = [
-    { name: 'Appetizers', description: 'Start your meal with these delicious appetizers', sortOrder: 1 },
-    { name: 'Main Course', description: 'Hearty main dishes', sortOrder: 2 },
-    { name: 'Beverages', description: 'Refreshing drinks', sortOrder: 3 },
-    { name: 'Desserts', description: 'Sweet endings', sortOrder: 4 }
-  ];
 
-  for (const category of defaultCategories) {
-    await prisma.menuCategory.create({
-      data: {
-        restaurantId,
-        ...category
-      }
-    });
-  }
-};
 
 
 const register = async (req, res) => {
@@ -279,9 +263,9 @@ const registerRestaurant = async (req, res) => {
     const bannerImage = req.files?.banner?.[0]?.path || null;
 
     // Create user and restaurant in a transaction
-    const result = await prisma.$transaction(async (prisma) => {
+    const result = await prisma.$transaction(async (transactionPrisma) => {
       // Create user first
-      const newUser = await prisma.user.create({
+      const newUser = await transactionPrisma.user.create({
         data: {
           name,
           email,
@@ -305,7 +289,7 @@ const registerRestaurant = async (req, res) => {
       });
 
       // Create restaurant with owner relation
-      const newRestaurant = await prisma.restaurant.create({
+      const newRestaurant = await transactionPrisma.restaurant.create({
         data: {
           name: restaurantName,
           description,
@@ -343,8 +327,22 @@ const registerRestaurant = async (req, res) => {
         }
       });
 
-      // Create default menu categories
-      await createDefaultMenuCategories(newRestaurant.id);
+      // Create default menu categories inside the transaction
+      const defaultCategories = [
+        { name: 'Appetizers', description: 'Start your meal with these delicious appetizers', sortOrder: 1 },
+        { name: 'Main Course', description: 'Hearty main dishes', sortOrder: 2 },
+        { name: 'Beverages', description: 'Refreshing drinks', sortOrder: 3 },
+        { name: 'Desserts', description: 'Sweet endings', sortOrder: 4 }
+      ];
+
+      for (const category of defaultCategories) {
+        await transactionPrisma.menuCategory.create({
+          data: {
+            restaurantId: newRestaurant.id,
+            ...category
+          }
+        });
+      }
 
       return { user: newUser, restaurant: newRestaurant };
     });
