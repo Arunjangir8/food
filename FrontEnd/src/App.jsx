@@ -1,6 +1,8 @@
 import Login from './pages/Login/login.jsx'
 import UserTypeSelection from './pages/Login/userTypeSelection.jsx'
 import OTPVerification from './pages/Login/OTPVerification.jsx'
+import ForgotPassword from './pages/Login/ForgotPassword.jsx'
+import ResetPassword from './pages/Login/ResetPassword.jsx'
 import { Dashboard } from './pages/Home/dashboard.jsx'
 import RestaurantsPage from './pages/Restaurants/restaurantsPage.jsx'
 import RestaurantDetailsPage from './pages/Restaurants/restaurantDetails.jsx'
@@ -71,6 +73,16 @@ function App() {
           <Route path="/verify-otp" element={
             <PublicRoute>
               <OTPVerification />
+            </PublicRoute>
+          } />
+          <Route path="/forgot-password" element={
+            <PublicRoute>
+              <ForgotPassword />
+            </PublicRoute>
+          } />
+          <Route path="/reset-password" element={
+            <PublicRoute>
+              <ResetPassword />
             </PublicRoute>
           } />
 

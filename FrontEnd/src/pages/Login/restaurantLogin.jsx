@@ -160,7 +160,12 @@ const LoginRestaurantPage = () => {
 
           {/* Links */}
           <div className="mt-4 text-center">
-            <a href="#" className="text-xs text-red-500 hover:underline">Forgot password?</a>
+            <button 
+              onClick={() => navigate('/forgot-password')}
+              className="text-xs text-red-500 hover:underline"
+            >
+              Forgot password?
+            </button>
           </div>
           
           <div className="mt-6 text-center">

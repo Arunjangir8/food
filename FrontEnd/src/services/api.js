@@ -42,6 +42,8 @@ export const authAPI = {
   loginRestaurant: (credentials) => api.post('/auth/restaurant/login', credentials),
   verifyOTP: (data) => api.post('/auth/verify-otp', data),
   resendOTP: (data) => api.post('/auth/resend-otp', data),
+  forgotPassword: (data) => api.post('/auth/forgot-password', data),
+  resetPassword: (data) => api.post('/auth/reset-password', data),
 };
 
 

@@ -221,7 +221,10 @@ const Login = () => {
               autoComplete="current-password"
               required
             />
-            <Components.Anchor href="#" onClick={(e) => e.preventDefault()}>
+            <Components.Anchor href="#" onClick={(e) => {
+              e.preventDefault();
+              navigate('/forgot-password');
+            }}>
               Forgot your password?
             </Components.Anchor>
             <Components.Button type="submit" disabled={loading}>
