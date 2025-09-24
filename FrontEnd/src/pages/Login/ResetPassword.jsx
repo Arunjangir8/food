@@ -51,17 +51,17 @@ const ResetPassword = () => {
   };
 
   return (
-    <Components.AppWrapper>
+    <div className="min-h-screen flex items-center justify-center p-4 relative text-center">
       <button
         onClick={() => navigate('/login')}
-        className="fixed top-4 left-4 z-50 flex items-center space-x-2 px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-white transition-all duration-200 shadow-lg"
+        className="fixed top-4 left-4 z-50 flex items-center space-x-2 px-4 py-2 bg-white/90 backdrop-blur-sm text-gray-700 rounded-xl hover:bg-white transition-all duration-200 shadow-lg "
       >
         <HiOutlineArrowLeft className="w-5 h-5" />
         <span>Back to Login</span>
       </button>
       
-      <Components.Container>
-        <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
+      <Components.Container className='flex justify-center items-center max-w-lg w-full bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg'>
+        <div className="w-full max-w-md mx-auto">
           <Components.Title>Reset Password</Components.Title>
           <p className="text-gray-600 mb-6 text-center">
             Enter your new password below.
@@ -90,7 +90,7 @@ const ResetPassword = () => {
           </Components.Form>
         </div>
       </Components.Container>
-    </Components.AppWrapper>
+    </div>
   );
 };
 
