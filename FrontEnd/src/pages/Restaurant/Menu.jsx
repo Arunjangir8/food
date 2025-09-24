@@ -497,7 +497,6 @@ const RestaurantMenu = () => {
                       Customizations
                     </label>
                     <button
-                      disabled
                       type="button"
                       onClick={addCustomization}
                       className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1"

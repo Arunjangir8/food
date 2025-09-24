@@ -109,19 +109,35 @@ const CartPage = () => {
             });
 
             // Convert API format to local format
-            const syncedCart = dbCart.map(item => ({
-              id: item.id,
-              itemId: item.menuItemId,
-              restaurantId: item.menuItem.category.restaurantId,
-              restaurantName: item.menuItem.category.restaurant.name,
-              name: item.menuItem.name,
-              price: item.menuItem.price,
-              customizations: item.customizations || {},
-              customizationPrice: 0,
-              totalPrice: item.menuItem.price,
-              image: item.menuItem.image || '🍕',
-              quantity: item.quantity
-            }));
+            const syncedCart = dbCart.map(item => {
+              // Calculate customization price
+              let customizationPrice = 0;
+              const customizations = item.customizations || {};
+              
+              Object.values(customizations).forEach(customizationValue => {
+                if (Array.isArray(customizationValue)) {
+                  customizationValue.forEach(option => {
+                    customizationPrice += option?.price || 0;
+                  });
+                } else if (customizationValue && customizationValue.price) {
+                  customizationPrice += customizationValue.price;
+                }
+              });
+              
+              return {
+                id: item.id,
+                itemId: item.menuItemId,
+                restaurantId: item.menuItem.category.restaurantId,
+                restaurantName: item.menuItem.category.restaurant.name,
+                name: item.menuItem.name,
+                price: item.menuItem.price,
+                customizations: customizations,
+                customizationPrice: customizationPrice,
+                totalPrice: item.menuItem.price + customizationPrice,
+                image: item.menuItem.image || '🍕',
+                quantity: item.quantity
+              };
+            });
 
             setCart(syncedCart);
             localStorageUtils.saveCart(syncedCart);
