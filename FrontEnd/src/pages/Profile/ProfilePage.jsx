@@ -413,13 +413,6 @@ const ProfilePage = () => {
     }
   };
 
-  const handleLogout = () => {
-    const confirmed = window.confirm('Are you sure you want to logout?');
-    if (confirmed) {
-      logout();
-      navigate('/login');
-    }
-  };
 
   const SidebarButton = ({ id, label, icon, isActive, onClick }) => (
     <button

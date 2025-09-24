@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://food-f5l3.vercel.app/api';
+const API_BASE_URL = 'http://localhost:3001/api';
 
 
 const api = axios.create({

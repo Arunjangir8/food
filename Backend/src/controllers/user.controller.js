@@ -224,6 +224,18 @@ const deleteAddress = async (req, res) => {
       });
     }
 
+    // Check if address is used in any orders
+    const ordersCount = await prisma.order.count({
+      where: { addressId: id }
+    });
+
+    if (ordersCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot delete address as it is associated with existing orders'
+      });
+    }
+
     await prisma.address.delete({
       where: { id }
     });
