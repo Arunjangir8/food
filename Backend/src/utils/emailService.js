@@ -40,7 +40,7 @@ const sendOTPEmail = async (email, otp, name) => {
 };
 
 const sendPasswordResetEmail = async (email, resetToken, name) => {
-  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+  const resetUrl = `${process.env.FRONTEND_URL || 'https://food-five-swart.vercel.app'}/reset-password?token=${resetToken}`;
   
   const mailOptions = {
     from: process.env.EMAIL_USER,
